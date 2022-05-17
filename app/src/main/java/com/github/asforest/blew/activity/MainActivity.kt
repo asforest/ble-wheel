@@ -1,10 +1,7 @@
-package com.example.w2
+package com.github.asforest.blew.activity
 
-import android.app.AlertDialog
 import android.bluetooth.BluetoothManager
 import android.content.Context
-import android.content.DialogInterface
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,11 +9,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.w2.hid.HidPeripheral
-import java.lang.Exception
+import com.example.w2.R
+import com.github.asforest.blew.ble.BLE
+import com.github.asforest.blew.ble.HidPeripheral
 
 class MainActivity : AppCompatActivity()
 {
@@ -27,33 +26,36 @@ class MainActivity : AppCompatActivity()
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        devicesList = findViewById(R.id.device_list)
 
         try {
-            hid = HidPeripheral(applicationContext, true, true, false, 20)
+            hid = HidPeripheral(applicationContext)
             hid!!.startAdvertising()
+
+            // 监听NumLock状态
+            hid!!.gattCallback.onCharacteristicWriteEvent.always {
+                if (it.characteristic.uuid == BLE.CHARACTERISTIC_HID_REPORT_0x2A4D)
+                {
+                    val lock = it.value[0]
+                    Log.i("App", "keyboard lock status update: $lock")
+                }
+            }
         } catch (e: Exception) {
-            Toast.makeText(applicationContext, e.message, Toast.LENGTH_LONG).show()
+            AlertDialog.Builder(this).setTitle("BLE启动时发生错误").setMessage(e.message).setNegativeButton("好耶") {_, _ -> }.show()
             finish()
         }
 
-        var bluetoothManager = applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        var bluetoothAdapter = bluetoothManager.adapter
-
-        var devs = ArrayList<DevicesListAdapter.BtDevice>()
-
-        for (dev in bluetoothAdapter.bondedDevices)
-        {
-            devs.add(DevicesListAdapter.BtDevice(dev.name, dev.address))
+        val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val devices = bluetoothManager.adapter.bondedDevices.map {
+            DevicesListAdapter.BtDevice(
+                it.name,
+                it.address
+            )
         }
-
-        devicesList = findViewById(R.id.device_list)
-        devicesList.adapter = DevicesListAdapter(devs, hid!!)
+        devicesList.adapter = DevicesListAdapter(devices, hid!!)
         devicesList.layoutManager = LinearLayoutManager(this)
 
-        findViewById<Button>(R.id.send).setOnClickListener {
-            hid!!.sendMsg("ABC")
-        }
-
+        findViewById<Button>(R.id.send).setOnClickListener { hid!!.sendMsg("ABC") }
     }
 
     override fun onDestroy()
@@ -63,17 +65,14 @@ class MainActivity : AppCompatActivity()
         if(hid != null)
             hid!!.stopAdvertising()
 
-        Log.i("APP__", "onDestroy: Destroy!")
+        Log.i("APP", "onDestroy: Destroy!")
     }
 
-    class DevicesListAdapter(dataSet: ArrayList<BtDevice>, hid: HidPeripheral): RecyclerView.Adapter<DevicesListAdapter.MyViewHolder>()
+    class DevicesListAdapter(val dataSet: List<BtDevice>, val hid: HidPeripheral): RecyclerView.Adapter<DevicesListAdapter.MyViewHolder>()
     {
-        val dataSet: ArrayList<BtDevice> = dataSet
-        val hid: HidPeripheral = hid
-
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder
         {
-            var view = LayoutInflater.from(parent.context).inflate(R.layout.device_item, parent, false)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.device_item, parent, false)
             return MyViewHolder(view, hid)
         }
 
@@ -89,9 +88,8 @@ class MainActivity : AppCompatActivity()
             return dataSet.size
         }
 
-        class MyViewHolder(view: View, hid: HidPeripheral) : RecyclerView.ViewHolder(view)
+        class MyViewHolder(view: View, val hid: HidPeripheral) : RecyclerView.ViewHolder(view)
         {
-            var hid: HidPeripheral = hid
             var deviceAddress = ""
 
             var deviceName: TextView = view.findViewById(R.id.device_name)
@@ -99,14 +97,16 @@ class MainActivity : AppCompatActivity()
 
             init {
                 deviceConnect.setOnClickListener {
-                    Log.i("APP__", "正在连接到: ${deviceName.text}(${deviceAddress})")
-                    var d = hid.bluetoothAdapter.getRemoteDevice(deviceAddress)
+                    Log.i("APP", "正在连接到: ${deviceName.text}(${deviceAddress})")
+                    val d = hid.adapter.getRemoteDevice(deviceAddress)
+                    hid.gattServer!!.cancelConnection(d)
                     hid.gattServer!!.connect(d, true)
                 }
 
                 deviceConnect.setOnLongClickListener {
-                    Log.i("APP__", "正在连接到: ${deviceName.text}(${deviceAddress})")
-                    var d = hid.bluetoothAdapter.getRemoteDevice(deviceAddress)
+                    Log.i("APP", "正在连接到: ${deviceName.text}(${deviceAddress})")
+                    val d = hid.adapter.getRemoteDevice(deviceAddress)
+                    hid.gattServer!!.cancelConnection(d)
                     hid.gattServer!!.connect(d, false)
 
                     true
@@ -115,6 +115,5 @@ class MainActivity : AppCompatActivity()
         }
 
         class BtDevice(var name: String, var mac: String)
-
     }
 }

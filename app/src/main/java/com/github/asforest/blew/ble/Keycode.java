@@ -1,4 +1,4 @@
-package com.example.w2.hid;
+package com.github.asforest.blew.ble;
 
 public class Keycode
 {

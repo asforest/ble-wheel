@@ -1,52 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.widget.LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context="com.github.asforest.blew.activity.MainActivity">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/device_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_weight="1"
-        tools:ignore="SpeakableTextPresentCheck">
+        app:layout_constraintBottom_toTopOf="@+id/send"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="SpeakableTextPresentCheck" />
 
-    </androidx.recyclerview.widget.RecyclerView>
-
-    <android.widget.AbsoluteLayout
+    <Button
+        android:id="@+id/send"
         android:layout_width="match_parent"
-        android:layout_height="238dp">
+        android:layout_height="123dp"
+        android:layout_x="75dp"
+        android:layout_y="87dp"
+        android:text="Test Keys"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <Button
-            android:id="@+id/button5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Button"
-            tools:layout_editor_absoluteX="52dp"
-            tools:layout_editor_absoluteY="40dp" />
-
-        <Button
-            android:id="@+id/button6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_x="271dp"
-            android:layout_y="3dp"
-            android:text="Button"
-            tools:layout_editor_absoluteX="265dp"
-            tools:layout_editor_absoluteY="40dp" />
-
-        <Button
-            android:id="@+id/send"
-            android:layout_width="221dp"
-            android:layout_height="123dp"
-            android:layout_x="75dp"
-            android:layout_y="87dp"
-            android:text="Button"
-            tools:layout_editor_absoluteX="95dp"
-            tools:layout_editor_absoluteY="138dp" />
-    </android.widget.AbsoluteLayout>
-
-</android.widget.LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
