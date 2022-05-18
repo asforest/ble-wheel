@@ -11,7 +11,7 @@ import kotlin.math.min
 
 class BLEHIDDevices(
     val gattServer: BluetoothGattServer,
-    val gattServerCallback: GattServerCallback,
+    val gattServerCallback: HIDPeripheral.GattServerCallback,
     val currentDevice: BluetoothDevice?
 ) {
     val PT_READ = BluetoothGattCharacteristic.PROPERTY_READ

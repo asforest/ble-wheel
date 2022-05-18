@@ -15,12 +15,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.w2.R
 import com.github.asforest.blew.ble.BLE
-import com.github.asforest.blew.ble.HidPeripheral
+import com.github.asforest.blew.ble.HIDPeripheral
+import com.github.asforest.blew.ble.impl.HIDKeyboard
 
 class MainActivity : AppCompatActivity()
 {
     lateinit var devicesList: RecyclerView
-    var hid: HidPeripheral? = null
+    var keyboard: HIDKeyboard? = null
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -29,11 +30,11 @@ class MainActivity : AppCompatActivity()
         devicesList = findViewById(R.id.device_list)
 
         try {
-            hid = HidPeripheral(applicationContext)
-            hid!!.startAdvertising()
+            keyboard = HIDKeyboard(applicationContext)
+            keyboard!!.startAdvertising()
 
             // 监听NumLock状态
-            hid!!.gattCallback.onCharacteristicWriteEvent.always {
+            keyboard!!.gattCallback.onCharacteristicWriteEvent.always {
                 if (it.characteristic.uuid == BLE.CHARACTERISTIC_HID_REPORT_0x2A4D)
                 {
                     val lock = it.value[0]
@@ -52,23 +53,23 @@ class MainActivity : AppCompatActivity()
                 it.address
             )
         }
-        devicesList.adapter = DevicesListAdapter(devices, hid!!)
+        devicesList.adapter = DevicesListAdapter(devices, keyboard!!)
         devicesList.layoutManager = LinearLayoutManager(this)
 
-        findViewById<Button>(R.id.send).setOnClickListener { hid!!.sendMsg("ABC") }
+        findViewById<Button>(R.id.send).setOnClickListener { keyboard!!.sendMsg("ABC") }
     }
 
     override fun onDestroy()
     {
         super.onDestroy()
 
-        if(hid != null)
-            hid!!.stopAdvertising()
+        if(keyboard != null)
+            keyboard!!.stopAdvertising()
 
         Log.i("APP", "onDestroy: Destroy!")
     }
 
-    class DevicesListAdapter(val dataSet: List<BtDevice>, val hid: HidPeripheral): RecyclerView.Adapter<DevicesListAdapter.MyViewHolder>()
+    class DevicesListAdapter(val dataSet: List<BtDevice>, val hid: HIDPeripheral): RecyclerView.Adapter<DevicesListAdapter.MyViewHolder>()
     {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder
         {
@@ -88,7 +89,7 @@ class MainActivity : AppCompatActivity()
             return dataSet.size
         }
 
-        class MyViewHolder(view: View, val hid: HidPeripheral) : RecyclerView.ViewHolder(view)
+        class MyViewHolder(view: View, val hid: HIDPeripheral) : RecyclerView.ViewHolder(view)
         {
             var deviceAddress = ""
 
