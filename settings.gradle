@@ -10,6 +10,7 @@ pluginManagement {
         id 'org.jetbrains.kotlin.android' version '1.5.21'
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -17,5 +18,6 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "W2"
+
+rootProject.name = "Blew"
 include ':app'
