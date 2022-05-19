@@ -15,7 +15,7 @@ class HIDKeyboard(context: Context) : HIDPeripheral(context)
         hid.pnp(0x02, 0x05ac, (0x820a).toShort(), 0x0210)
         hid.hidInfo(0x00, 0x01)
         hid.reportMap(HID_REPORT_MAP_KEYBOARD)
-        hid.batteryLevel(98)
+        hid.setBatteryLevel(98)
 
         hid.startServices()
     }
@@ -38,7 +38,7 @@ class HIDKeyboard(context: Context) : HIDPeripheral(context)
 
         Thread.sleep(20)
 
-        hid.batteryLevel(50)
+        hid.setBatteryLevel(50)
     }
 
     companion object {

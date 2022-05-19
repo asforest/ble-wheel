@@ -1,23 +1,36 @@
 package com.github.asforest.blew.activity
 
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.BatteryManager
 import android.os.Bundle
 import android.os.Handler
+import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.github.asforest.blew.R
 import com.github.asforest.blew.ble.impl.HIDGamepad
+import com.github.asforest.blew.event.Event
+import com.github.asforest.blew.util.FileObj
 import org.joml.Math
 import org.joml.Matrix4f
 import org.joml.Quaternionf
 import org.joml.Vector3f
+import org.json.JSONException
+import org.json.JSONObject
+import java.lang.Integer.min
 import kotlin.math.abs
+import kotlin.math.max
 
 class DrivingActivity : AppCompatActivity(), SensorEventListener
 {
@@ -29,14 +42,34 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
     val referenceRotationText: TextView by lazy { findViewById(R.id.reference_rotation) }
     val primaryButton: Button by lazy { findViewById(R.id.button_center) }
     val functionalButtons by lazy { arrayOf<Button>(
-        findViewById(R.id.gamepad_button1),
-        findViewById(R.id.gamepad_button2),
-        findViewById(R.id.gamepad_button3),
-        findViewById(R.id.gamepad_button4),
-        findViewById(R.id.gamepad_button5),
-        findViewById(R.id.gamepad_button6),
-        findViewById(R.id.gamepad_button7),
-        findViewById(R.id.gamepad_button8),
+        findViewById(R.id.gamepad_button_1),
+        findViewById(R.id.gamepad_button_2),
+        findViewById(R.id.gamepad_button_3),
+        findViewById(R.id.gamepad_button_4),
+        findViewById(R.id.gamepad_button_5),
+        findViewById(R.id.gamepad_button_6),
+        findViewById(R.id.gamepad_button_7),
+        findViewById(R.id.gamepad_button_8),
+        findViewById(R.id.gamepad_button_9),
+        findViewById(R.id.gamepad_button_10),
+        findViewById(R.id.gamepad_button_11),
+        findViewById(R.id.gamepad_button_12),
+        findViewById(R.id.gamepad_button_13),
+        findViewById(R.id.gamepad_button_14),
+        findViewById(R.id.gamepad_button_15),
+        findViewById(R.id.gamepad_button_16),
+        findViewById(R.id.gamepad_button_17),
+        findViewById(R.id.gamepad_button_18),
+        findViewById(R.id.gamepad_button_19),
+        findViewById(R.id.gamepad_button_20),
+        findViewById(R.id.gamepad_button_21),
+        findViewById(R.id.gamepad_button_22),
+        findViewById(R.id.gamepad_button_23),
+        findViewById(R.id.gamepad_button_24),
+
+        findViewById(R.id.gamepad_button_25),
+        findViewById(R.id.gamepad_button_26),
+        findViewById(R.id.gamepad_button_27),
     ) }
 
     var reportingEnabled = true // 为false时禁用所有旋转，也不向BLE报告陀螺仪数据
@@ -62,10 +95,10 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
             referenceRotationText.text = referenceRotation!!.stringify()
 
             // 复位数据
-            accumulatedAngleZ = 0f
-            accumulatedAngleX = 0f
-            previousAngleZ = null
-            previousAngleX = null
+            accumulatedSteeringAngle = 0f
+            accumulatedThrottleAngle = 0f
+            previousSteeringAngle = null
+            previousThrottleAngleX = null
         }
 
         primaryButton.setOnLongClickListener {
@@ -94,25 +127,35 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         }
 
         // 定时报告数据
-        repeatedlyRun(100) { reportSensorData() }
+        repeatedlyRun(50) { reportSensorData() }
 
         // 处理设备断开事件
         hidGamepad.onDeviceConnectionStateChangeEvent.once {
             if (!it)
                 finish()
         }
+
+        // 保持屏幕开启
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        updateButtonText()
+
+        // 首次报告电量 + 定时刷新电量
+        registerReceiver(batteryLevelChangeReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        onBatteryLevelChangeEvent.always { hidGamepad.hid.setBatteryLevel(max(0, min(100, it)).toByte()) }
     }
 
     override fun onDestroy()
     {
         super.onDestroy()
         sensorManager.unregisterListener(this)
+        unregisterReceiver(batteryLevelChangeReceiver)
     }
 
-    var accumulatedAngleZ: Float = 0f // 方向盘当前累计旋转角度（可能超过360）
-    var accumulatedAngleX: Float = 0f // 油门刹车轴当前累计旋转角度（可能超过360）
-    private var previousAngleZ: Float? = null // 上一次的位置角度，用来计算角度delta
-    private var previousAngleX: Float? = null // 上一次的位置角度，用来计算角度delta
+    var accumulatedSteeringAngle: Float = 0f // 方向盘当前累计旋转角度（可能超过360）
+    var accumulatedThrottleAngle: Float = 0f // 油门刹车轴当前累计旋转角度（可能超过360）
+    private var previousSteeringAngle: Float? = null // 上一次的位置角度，用来计算角度delta
+    private var previousThrottleAngleX: Float? = null // 上一次的位置角度，用来计算角度delta
     @SuppressLint("SetTextI18n")
     fun reportSensorData()
     {
@@ -140,12 +183,12 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         val rotateOnZ = Quaternionf()
         currZ.rotationTo(refZ, rotateOnZ)
         val rotatedY = currY.rotate(rotateOnZ)
-        val currentAngleZ = Math.toDegrees(rotatedY.angleSigned(refY, refZ).toDouble()).toFloat()
+        val currentSteeringAngle = Math.toDegrees(rotatedY.angleSigned(refY, refZ).toDouble()).toFloat()
 
-        val rotateOnX = Quaternionf()
-        currX.rotationTo(refX, rotateOnX)
-        val rotatedZ = currZ.rotate(rotateOnX)
-        val currentAngleX = Math.toDegrees(rotatedZ.angleSigned(refZ, refX).toDouble()).toFloat()
+        val rotateOnY = Quaternionf()
+        currY.rotationTo(refY, rotateOnY)
+        val rotatedX = currX.rotate(rotateOnY)
+        val currentThrottleAngle = Math.toDegrees(rotatedX.angleSigned(refX, refY).toDouble()).toFloat()
 
         var reported = false
 
@@ -172,16 +215,16 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         }
 
         // 计算方向盘实际角度
-        if (previousAngleZ != null)
+        if (previousSteeringAngle != null)
         {
             // 计算方向盘实际朝向
-            accumulatedAngleZ += angleDelta(currentAngleZ, previousAngleZ!!)
+            accumulatedSteeringAngle += angleDelta(currentSteeringAngle, previousSteeringAngle!!)
 
             // 方向盘的最大旋转角度（一半）
             val halfConstraint = 180f
 
             // 归一化（默认位置是在0.5）
-            val normalized = (Math.clamp(-halfConstraint, halfConstraint, accumulatedAngleZ) + halfConstraint) / (halfConstraint * 2)
+            val normalized = (Math.clamp(-halfConstraint, halfConstraint, accumulatedSteeringAngle) + halfConstraint) / (halfConstraint * 2)
 
             // 转换成HID协议范围的值
             val hidValue = ((65534 * normalized).toInt() - 32768).toShort()
@@ -190,33 +233,114 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
             hidGamepad.setSteering(hidValue)
             reportOnce()
         }
-        previousAngleZ = currentAngleZ
+        previousSteeringAngle = currentSteeringAngle
 
         // 计算油门刹车实际角度
-        if (previousAngleX != null)
+        if (previousThrottleAngleX != null)
         {
             // 计算方向盘实际朝向
-            accumulatedAngleX += angleDelta(currentAngleX, previousAngleX!!)
+            accumulatedThrottleAngle += angleDelta(currentThrottleAngle, previousThrottleAngleX!!)
 
             // 最大旋转角度（一半）
-            val halfConstraint = 90f
+            val halfConstraint = 45f
 
             // 归一化（默认位置是在0.5）
-            val normalized = (Math.clamp(-halfConstraint, halfConstraint, accumulatedAngleX) + halfConstraint) / (halfConstraint * 2)
+            val normalized = (Math.clamp(-halfConstraint, halfConstraint, accumulatedThrottleAngle) + halfConstraint) / (halfConstraint * 2)
 
             // 转换成HID协议范围的值
             val hidValue = ((65534 * normalized).toInt() - 32768).toShort()
 
             // 上报
-            hidGamepad.setBrake(hidValue)
-            hidGamepad.setAccelerator((65535 - hidValue).toShort())
+//            hidGamepad.setBrake(hidValue)
+//            hidGamepad.setAccelerator((65535 - (hidValue.toInt() + 32768) - 32768).toShort())
+
+            hidGamepad.setAccelerator(hidValue)
             reportOnce()
         }
-        previousAngleX = currentAngleX
+        previousThrottleAngleX = currentThrottleAngle
 
         // 更新UI
-        primaryButton.rotation = -currentAngleZ
-        primaryButton.text = "Z: ${a(currentAngleZ)} / ${a(accumulatedAngleZ)}\nX: ${a(currentAngleX)} / ${a(accumulatedAngleX)}"
+        primaryButton.rotation = -currentSteeringAngle
+        primaryButton.text = "Z: ${a(currentSteeringAngle)} / ${a(accumulatedSteeringAngle)}\nX: ${a(currentThrottleAngle)} / ${a(accumulatedThrottleAngle)}"
+    }
+
+    fun updateButtonText()
+    {
+        val configFile = FileObj("/sdcard/blew.json")
+        if (!configFile.exists)
+        {
+            val root = JSONObject()
+
+            for ((index, button) in functionalButtons.withIndex())
+            {
+                root.put("b${index + 1}", "b${index + 1}")
+            }
+
+            configFile.content = root.toString(4)
+        }
+
+        val root = JSONObject(configFile.content)
+
+        for ((index, button) in functionalButtons.withIndex())
+        {
+            try {
+                functionalButtons[index].text = root.getString("b${index + 1}")
+            } catch (e: JSONException) {
+                functionalButtons[index].text = "b${index + 1}"
+            }
+        }
+    }
+
+    fun queryBatteryLevel(): Int
+    {
+        val intentFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+        val batteryStatus = registerReceiver(null, intentFilter)
+
+        val batteryPct: Float? = batteryStatus?.let { intent ->
+            val level: Int = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+            val scale: Int = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+            level * 100 / scale.toFloat()
+        }
+
+        return (batteryPct ?: 1f).toInt()
+    }
+
+    val onBatteryLevelChangeEvent = Event<Int>()
+    val batteryLevelChangeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action != Intent.ACTION_BATTERY_CHANGED)
+                return
+            val level: Int = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+            val scale: Int = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+            val percent = max(0, min(100, (level * 100 / scale.toFloat()).toInt()))
+            onBatteryLevelChangeEvent.invoke(percent)
+        }
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean
+    {
+        when (keyCode)
+        {
+            KeyEvent.KEYCODE_VOLUME_UP -> {
+                hidGamepad.press(HIDGamepad.BUTTON_127.toUByte())
+                hidGamepad.sendReport()
+                Thread.sleep(20)
+                hidGamepad.release(HIDGamepad.BUTTON_127.toUByte())
+                hidGamepad.sendReport()
+            }
+
+            KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                hidGamepad.press(HIDGamepad.BUTTON_128.toUByte())
+                hidGamepad.sendReport()
+                Thread.sleep(20)
+                hidGamepad.release(HIDGamepad.BUTTON_128.toUByte())
+                hidGamepad.sendReport()
+            }
+
+            else -> return false
+        }
+
+        return true
     }
 
     private val temp = FloatArray(16)

@@ -97,6 +97,8 @@ class MainActivity : AppCompatActivity()
 //        if(keyboard != null)
 //            keyboard!!.stopAdvertising()
 
+        gamepad?.stopAdvertising()
+
         Log.i("APP", "onDestroy: Destroy!")
     }
 

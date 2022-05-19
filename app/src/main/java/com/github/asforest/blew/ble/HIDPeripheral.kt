@@ -36,7 +36,7 @@ abstract class HIDPeripheral(context: Context)
     val gattServer: BluetoothGattServer = manager.openGattServer(context, gattCallback)
     var onlineDevices: MutableMap<String, BluetoothDevice> = mutableMapOf()
     var currentDevice: BluetoothDevice? = null
-    val hid: BLEHIDDevices = BLEHIDDevices(gattServer, this, currentDevice)
+    val hid: BLEHIDDevices = BLEHIDDevices(gattServer, this)
 
     val onDeviceConnectionStateChangeEvent = Event<Boolean>()
     val onServiceAddEvent = Event<BluetoothGattService>()

@@ -12,7 +12,6 @@ import kotlin.math.min
 class BLEHIDDevices(
     val gattServer: BluetoothGattServer,
     val hidPeripheral: HIDPeripheral,
-    val currentDevice: BluetoothDevice?
 ) {
     val PT_READ = BluetoothGattCharacteristic.PROPERTY_READ
     val PT_WRITE = BluetoothGattCharacteristic.PROPERTY_WRITE
@@ -196,11 +195,11 @@ class BLEHIDDevices(
     /**
      * Set the battery level characteristic value.
      */
-    fun batteryLevel(level: Byte)
+    fun setBatteryLevel(level: Byte)
     {
         batteryLevelCharacteristic.value = byteArrayOf(max(0, min(100, level.toInt())).toByte())
-        if (currentDevice != null)
-            gattServer.notifyCharacteristicChanged(currentDevice, batteryLevelCharacteristic, true)
+        if (hidPeripheral.currentDevice != null)
+            gattServer.notifyCharacteristicChanged(hidPeripheral.currentDevice, batteryLevelCharacteristic, true)
     }
 
     private fun BluetoothGattService.createCharacteristic(uuid: UUID, properties: Int, permissions: Int): BluetoothGattCharacteristic
