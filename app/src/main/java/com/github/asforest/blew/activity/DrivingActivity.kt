@@ -16,6 +16,7 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.github.asforest.blew.R
@@ -40,6 +41,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
     val currentRotationText: TextView by lazy { findViewById(R.id.current_rotation) }
     val referenceRotationText: TextView by lazy { findViewById(R.id.reference_rotation) }
     val primaryButton: Button by lazy { findViewById(R.id.button_center) }
+    val accelerator_bar: ProgressBar by lazy { findViewById(R.id.accelerator_bar) }
     val functionalButtons by lazy { arrayOf<Button>(
         findViewById(R.id.gamepad_button_1),
         findViewById(R.id.gamepad_button_2),
@@ -98,9 +100,9 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
 
             // 复位数据
             accumulatedSteeringAngle = 0f
-            accumulatedThrottleAngle = 0f
+            accumulatedAcceleratorAngle = 0f
             previousSteeringAngle = null
-            previousThrottleAngleX = null
+            previousAcceleratorAngleX = null
         }
 
         primaryButton.setOnLongClickListener {
@@ -155,9 +157,9 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
     }
 
     var accumulatedSteeringAngle: Float = 0f // 方向盘当前累计旋转角度（可能超过360）
-    var accumulatedThrottleAngle: Float = 0f // 油门刹车轴当前累计旋转角度（可能超过360）
+    var accumulatedAcceleratorAngle: Float = 0f // 油门刹车轴当前累计旋转角度（可能超过360）
     private var previousSteeringAngle: Float? = null // 上一次的位置角度，用来计算角度delta
-    private var previousThrottleAngleX: Float? = null // 上一次的位置角度，用来计算角度delta
+    private var previousAcceleratorAngleX: Float? = null // 上一次的位置角度，用来计算角度delta
     @SuppressLint("SetTextI18n")
     fun reportSensorData()
     {
@@ -190,7 +192,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         val rotateOnY = Quaternionf()
         currY.rotationTo(refY, rotateOnY)
         val rotatedX = currX.rotate(rotateOnY)
-        val currentThrottleAngle = Math.toDegrees(rotatedX.angleSigned(refX, refY).toDouble()).toFloat()
+        val currentAcceleratorAngle = Math.toDegrees(rotatedX.angleSigned(refX, refY).toDouble()).toFloat()
 
         var reported = false
 
@@ -237,17 +239,18 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         }
         previousSteeringAngle = currentSteeringAngle
 
+        var acceleratorBarProgress: Float = 0.5f
         // 计算油门刹车实际角度
-        if (previousThrottleAngleX != null)
+        if (previousAcceleratorAngleX != null)
         {
             // 计算方向盘实际朝向
-            accumulatedThrottleAngle += angleDelta(currentThrottleAngle, previousThrottleAngleX!!)
+            accumulatedAcceleratorAngle += angleDelta(currentAcceleratorAngle, previousAcceleratorAngleX!!)
 
             // 最大旋转角度（一半）
             val halfConstraint = 45f
 
             // 归一化（默认位置是在0.5）
-            val normalized = (Math.clamp(-halfConstraint, halfConstraint, accumulatedThrottleAngle) + halfConstraint) / (halfConstraint * 2)
+            val normalized = (Math.clamp(-halfConstraint, halfConstraint, accumulatedAcceleratorAngle) + halfConstraint) / (halfConstraint * 2)
 
             // 转换成HID协议范围的值
             val hidValue = ((65534 * normalized).toInt() - 32768).toShort()
@@ -258,12 +261,15 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
 
             hidGamepad.setAccelerator(hidValue)
             reportOnce()
+
+            acceleratorBarProgress = normalized
         }
-        previousThrottleAngleX = currentThrottleAngle
+        previousAcceleratorAngleX = currentAcceleratorAngle
 
         // 更新UI
         primaryButton.rotation = -currentSteeringAngle
-        primaryButton.text = "Z: ${a(currentSteeringAngle)} / ${a(accumulatedSteeringAngle)}\nX: ${a(currentThrottleAngle)} / ${a(accumulatedThrottleAngle)}"
+        primaryButton.text = "Z: ${a(currentSteeringAngle)} / ${a(accumulatedSteeringAngle)}\nX: ${a(currentAcceleratorAngle)} / ${a(accumulatedAcceleratorAngle)}"
+        accelerator_bar.progress = 100 - (100 * acceleratorBarProgress).toInt()
     }
 
     fun updateConfigurationFile()
