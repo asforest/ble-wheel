@@ -26,7 +26,6 @@ import org.joml.Math
 import org.joml.Matrix4f
 import org.joml.Quaternionf
 import org.joml.Vector3f
-import org.json.JSONException
 import org.json.JSONObject
 import java.lang.Integer.min
 import kotlin.math.abs
@@ -71,6 +70,9 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         findViewById(R.id.gamepad_button_26),
         findViewById(R.id.gamepad_button_27),
     ) }
+
+    var steeringHalfConstraint: Int = 270
+    var acceleratorHalfConstraint: Int = 45
 
     var reportingEnabled = true // 为false时禁用所有旋转，也不向BLE报告陀螺仪数据
     var currentRotation: Matrix4f? = null
@@ -138,7 +140,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         // 保持屏幕开启
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        updateButtonText()
+        updateConfigurationFile()
 
         // 首次报告电量 + 定时刷新电量
         registerReceiver(batteryLevelChangeReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
@@ -221,7 +223,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
             accumulatedSteeringAngle += angleDelta(currentSteeringAngle, previousSteeringAngle!!)
 
             // 方向盘的最大旋转角度（一半）
-            val halfConstraint = 180f
+            val halfConstraint = 210f
 
             // 归一化（默认位置是在0.5）
             val normalized = (Math.clamp(-halfConstraint, halfConstraint, accumulatedSteeringAngle) + halfConstraint) / (halfConstraint * 2)
@@ -264,31 +266,31 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         primaryButton.text = "Z: ${a(currentSteeringAngle)} / ${a(accumulatedSteeringAngle)}\nX: ${a(currentThrottleAngle)} / ${a(accumulatedThrottleAngle)}"
     }
 
-    fun updateButtonText()
+    fun updateConfigurationFile()
     {
         val configFile = FileObj("/sdcard/blew.json")
+
+        // 保存默认配置文件
         if (!configFile.exists)
         {
             val root = JSONObject()
 
+            root.put("steering_half_constraint", 270)
+            root.put("accelerator_half_constraint", 45)
+
             for ((index, button) in functionalButtons.withIndex())
-            {
                 root.put("b${index + 1}", "b${index + 1}")
-            }
 
             configFile.content = root.toString(4)
         }
 
+        // 加载配置文件
         val root = JSONObject(configFile.content)
-
         for ((index, button) in functionalButtons.withIndex())
-        {
-            try {
-                functionalButtons[index].text = root.getString("b${index + 1}")
-            } catch (e: JSONException) {
-                functionalButtons[index].text = "b${index + 1}"
-            }
-        }
+            functionalButtons[index].text = root.optString("b${index + 1}", "b${index + 1}")
+
+        steeringHalfConstraint = root.optInt("steering_half_constraint", 270)
+        acceleratorHalfConstraint = root.optInt("accelerator_half_constraint", 45)
     }
 
     fun queryBatteryLevel(): Int
