@@ -1,25 +1,16 @@
 package com.github.asforest.blew.activity
 
-import android.bluetooth.BluetoothManager
-import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.Button
-import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.w2.R
+import com.github.asforest.blew.R
 import com.github.asforest.blew.ble.BLE
-import com.github.asforest.blew.ble.HIDPeripheral
 import com.github.asforest.blew.ble.impl.HIDGamepad
-import com.github.asforest.blew.ble.impl.HIDKeyboard
-import kotlin.random.Random
 
 class MainActivity : AppCompatActivity()
 {
@@ -57,8 +48,9 @@ class MainActivity : AppCompatActivity()
             config.setWhichSimulationControls(true, true, true, true, true)
 
             gamepad = HIDGamepad(this, config)
+            _gamepad = gamepad
             gamepad?.startAdvertising()
-//
+
             gamepad?.setAccelerator(0)
             gamepad?.setBrake(0)
             gamepad?.setSteering(0)
@@ -80,11 +72,21 @@ class MainActivity : AppCompatActivity()
 //        }
 //        devicesList.adapter = DevicesListAdapter(devices, keyboard!!)
 //        devicesList.layoutManager = LinearLayoutManager(this)
+
+        gamepad!!.onCharacteristicReadEvent.always {
+            if (it.characteristic.uuid == BLE.CHARACTERISTIC_HID_REPORT_MAP_0x2A4B)
+                startActivity(Intent(this@MainActivity, DrivingActivity::class.java))
+        }
+//        gamepad!!.onDeviceConnectionStateChangeEvent.always {
+//            if (it)
+//                startActivity(Intent(this@MainActivity, DrivingActivity::class.java))
+//        }
+
 //
         findViewById<Button>(R.id.send).setOnClickListener {
 //            keyboard!!.sendMsg("ABC")
 
-
+            startActivity(Intent(this@MainActivity, DrivingActivity::class.java))
         }
     }
 
@@ -96,6 +98,11 @@ class MainActivity : AppCompatActivity()
 //            keyboard!!.stopAdvertising()
 
         Log.i("APP", "onDestroy: Destroy!")
+    }
+
+    companion object {
+        @JvmStatic
+        var _gamepad: HIDGamepad? = null
     }
 
 //    class DevicesListAdapter(val dataSet: List<BtDevice>, val hid: HIDPeripheral): RecyclerView.Adapter<DevicesListAdapter.MyViewHolder>()

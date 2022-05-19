@@ -8,27 +8,27 @@
     tools:context="com.github.asforest.blew.activity.DrivingActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/center_panel"
+        android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/reference_rotation"
             android:layout_width="196dp"
             android:layout_height="84dp"
-            android:text="Hello World!"
+            android:text="reference_rotation"
             android:textAlignment="center"
-            android:textSize="18sp"
+            android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
             android:id="@+id/current_rotation"
             android:layout_width="203dp"
             android:layout_height="84dp"
-            android:text="Hello World!"
+            android:text="current_rotation"
             android:textAlignment="center"
-            android:textSize="18sp"
+            android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -36,17 +36,17 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/center_panel"
         android:layout_width="match_parent"
-        android:layout_height="350dp"
+        android:layout_height="0dp"
         android:background="#E1E1E1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
         app:layout_constraintVertical_bias="0.498">
 
         <Button
             android:id="@+id/button_center"
-            android:layout_width="179dp"
+            android:layout_width="108dp"
             android:layout_height="108dp"
             android:text="开始/校准"
             app:layout_constraintBottom_toBottomOf="parent"

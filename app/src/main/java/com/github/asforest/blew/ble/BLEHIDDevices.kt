@@ -11,7 +11,7 @@ import kotlin.math.min
 
 class BLEHIDDevices(
     val gattServer: BluetoothGattServer,
-    val gattServerCallback: HIDPeripheral.GattServerCallback,
+    val hidPeripheral: HIDPeripheral,
     val currentDevice: BluetoothDevice?
 ) {
     val PT_READ = BluetoothGattCharacteristic.PROPERTY_READ
@@ -75,7 +75,7 @@ class BLEHIDDevices(
     {
         var continuation: Continuation<Unit>? = null
 
-        gattServerCallback.onServiceAddEvent.once { continuation?.resume(Unit) }
+        hidPeripheral.onServiceAddEvent.once { continuation?.resume(Unit) }
         gattServer.addService(service)
 
         return suspendCoroutine {

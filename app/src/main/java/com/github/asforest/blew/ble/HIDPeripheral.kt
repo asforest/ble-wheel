@@ -23,7 +23,14 @@ abstract class HIDPeripheral(context: Context)
     val gattServer: BluetoothGattServer = manager.openGattServer(context, gattCallback)
     var onlineDevices: MutableMap<String, BluetoothDevice> = mutableMapOf()
     var currentDevice: BluetoothDevice? = null
-    val hid: BLEHIDDevices = BLEHIDDevices(gattServer, gattCallback, currentDevice)
+    val hid: BLEHIDDevices = BLEHIDDevices(gattServer, this, currentDevice)
+
+    val onDeviceConnectionStateChangeEvent = Event<Boolean>()
+    val onServiceAddEvent = Event<BluetoothGattService>()
+    val onCharacteristicReadEvent = Event<CharacteristicReadEvent>()
+    val onCharacteristicWriteEvent = Event<CharacteristicWriteEvent>()
+    val onDescriptorReadEvent = Event<DescriptorReadEvent>()
+    val onDescriptorWriteEvent = Event<DescriptorWriteEvent>()
 
     fun setupAdvertiser(): BluetoothLeAdvertiser
     {
@@ -78,46 +85,35 @@ abstract class HIDPeripheral(context: Context)
 
     class GattServerCallback(var ins: HIDPeripheral) : BluetoothGattServerCallback()
     {
-        val onCharacteristicWriteEvent = Event<CharacteristicWriteEvent>()
-        val onDescriptorWriteEvent = Event<DescriptorWriteEvent>()
-        val onServiceAddEvent = Event<BluetoothGattService>()
-
-        class CharacteristicWriteEvent(
-            val device: BluetoothDevice,
-            val requestId: Int,
-            val characteristic: BluetoothGattCharacteristic,
-            val preparedWrite: Boolean,
-            val responseNeeded: Boolean,
-            val offset: Int,
-            val value: ByteArray
-        )
-
-        class DescriptorWriteEvent(
-            val device: BluetoothDevice,
-            val requestId: Int,
-            val offset: Int,
-            val descriptor: BluetoothGattDescriptor
-        )
-
         override fun onConnectionStateChange(device: BluetoothDevice, status: Int, newState: Int)
         {
             Log.d("App", "onConnectionStateChange() device: (${device.name}): $status -> $newState")
 
+//            ins.currentDevice = when(newState) {
+//                BluetoothProfile.STATE_CONNECTED -> device
+//                BluetoothProfile.STATE_DISCONNECTED -> null
+//                else -> null
+//            }
+
             ins.currentDevice = when(newState) {
-                BluetoothProfile.STATE_CONNECTED -> device
+                BluetoothProfile.STATE_CONNECTED -> if (device.bondState == BluetoothDevice.BOND_BONDED) device else null
                 BluetoothProfile.STATE_DISCONNECTED -> null
                 else -> null
             }
+
+            ins.onDeviceConnectionStateChangeEvent.invoke(ins.currentDevice != null)
         }
 
         override fun onServiceAdded(status: Int, service: BluetoothGattService) {
             Log.d("App", "Service Add: ${service.uuid}: $status")
-            onServiceAddEvent.invoke(service)
+            ins.onServiceAddEvent.invoke(service)
         }
 
         override fun onCharacteristicReadRequest(device: BluetoothDevice, requestId: Int, offset: Int, characteristic: BluetoothGattCharacteristic)
         {
             Log.d("App", "onCharacteristicReadRequest(): name: (${device.name}), requestId: ($requestId), offset: ($offset), uuid(${characteristic.uuid})")
+
+            ins.onCharacteristicReadEvent.invoke(CharacteristicReadEvent(device, requestId, offset, characteristic))
 
             ins.gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, characteristic.value)
         }
@@ -126,12 +122,14 @@ abstract class HIDPeripheral(context: Context)
         {
             Log.d("App", "onCharacteristicWriteRequest(): name: ${device.name}(${device.address}), requestId: ($requestId), preparedWrite: ($preparedWrite), responseNeeded: ($responseNeeded), offset: ($offset), uuid:(${characteristic.uuid}), value:(${value})")
 
-            onCharacteristicWriteEvent.invoke(CharacteristicWriteEvent(device, requestId, characteristic, preparedWrite, responseNeeded, offset, value))
+            ins.onCharacteristicWriteEvent.invoke(CharacteristicWriteEvent(device, requestId, characteristic, preparedWrite, responseNeeded, offset, value))
         }
 
         override fun onDescriptorReadRequest(device: BluetoothDevice, requestId: Int, offset: Int, descriptor: BluetoothGattDescriptor)
         {
             Log.d("App", "onDescriptorReadRequest() device(${device.name}), requestId($requestId), offset($offset), uuid(${descriptor.uuid})")
+
+            ins.onDescriptorReadEvent.invoke(DescriptorReadEvent(device, requestId, offset, descriptor))
 
             when(descriptor.uuid)
             {
@@ -155,7 +153,38 @@ abstract class HIDPeripheral(context: Context)
         {
             Log.d("App", "onDescriptorWriteRequest() device(${device.name}), requestId($requestId), offset($offset), uuid(${descriptor.uuid})")
 
-            onDescriptorWriteEvent.invoke(DescriptorWriteEvent(device, requestId, offset, descriptor))
+            ins.onDescriptorWriteEvent.invoke(DescriptorWriteEvent(device, requestId, offset, descriptor))
         }
     }
+
+    class CharacteristicWriteEvent(
+        val device: BluetoothDevice,
+        val requestId: Int,
+        val characteristic: BluetoothGattCharacteristic,
+        val preparedWrite: Boolean,
+        val responseNeeded: Boolean,
+        val offset: Int,
+        val value: ByteArray
+    )
+
+    class DescriptorWriteEvent(
+        val device: BluetoothDevice,
+        val requestId: Int,
+        val offset: Int,
+        val descriptor: BluetoothGattDescriptor
+    )
+
+    class CharacteristicReadEvent(
+        val device: BluetoothDevice,
+        val requestId: Int,
+        val offset: Int,
+        val characteristic: BluetoothGattCharacteristic
+    )
+
+    class DescriptorReadEvent(
+        val device: BluetoothDevice,
+        val requestId: Int,
+        val offset: Int,
+        val descriptor: BluetoothGattDescriptor
+    )
 }
