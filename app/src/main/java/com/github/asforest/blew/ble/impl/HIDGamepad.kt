@@ -14,25 +14,25 @@ import kotlin.experimental.or
 
 class HIDGamepad(context: Context, var config: GamepadConfiguration) : HIDPeripheral(context)
 {
-    var _buttons = ByteArray(16) // 8 bits x 16 --> 128 bits // 实际类型为 uint8_t
-    var _specialButtons: Byte = 0 // 实际类型为 uint8_t
-    var _x: Short = 0 // 实际类型为 int16_t
-    var _y: Short = 0 // 实际类型为 int16_t
-    var _z: Short = 0 // 实际类型为 int16_t
-    var _rZ: Short = 0 // 实际类型为 int16_t
-    var _rX: Short = 0 // 实际类型为 int16_t
-    var _rY: Short = 0 // 实际类型为 int16_t
-    var _slider1: Short = 0 // 实际类型为 int16_t
-    var _slider2: Short = 0 // 实际类型为 int16_t
-    var _rudder: Short = 0 // 实际类型为 int16_t
-    var _throttle: Short = 0 // 实际类型为 int16_t
-    var _accelerator: Short = 0 // 实际类型为 int16_t
-    var _brake: Short = 0 // 实际类型为 int16_t
-    var _steering: Short = 0 // 实际类型为 int16_t
-    var _hat1: Short = 0 // 实际类型为 int16_t
-    var _hat2: Short = 0 // 实际类型为 int16_t
-    var _hat3: Short = 0 // 实际类型为 int16_t
-    var _hat4: Short = 0 // 实际类型为 int16_t
+    var _buttons = ByteArray(16) // 8 bits x 16 --> 128 bits // uint8_t
+    var _specialButtons: Byte = 0 // uint8_t
+    var _x: Short = 0 // int16_t
+    var _y: Short = 0 // int16_t
+    var _z: Short = 0 // int16_t
+    var _rZ: Short = 0 // int16_t
+    var _rX: Short = 0 // int16_t
+    var _rY: Short = 0 // int16_t
+    var _slider1: Short = 0 // int16_t
+    var _slider2: Short = 0 // int16_t
+    var _rudder: Short = 0 // int16_t
+    var _throttle: Short = 0 // int16_t
+    var _accelerator: Short = 0 // int16_t
+    var _brake: Short = 0 // int16_t
+    var _steering: Short = 0 // int16_t
+    var _hat1: Short = 0 // int16_t
+    var _hat2: Short = 0 // int16_t
+    var _hat3: Short = 0 // int16_t
+    var _hat4: Short = 0 // int16_t
 
     var buttonPaddingBits: Int
     var specialButtonPaddingBits: Int
@@ -575,7 +575,7 @@ class HIDGamepad(context: Context, var config: GamepadConfiguration) : HIDPeriph
 
         if (config.totalSpecialButtonCount > 0)
         {
-            m[currentReportIndex++] = _specialButtons
+            m[currentReportIndex++] = _specialButtons.toByte()
         }
 
         if (config.getIncludeXAxis)
@@ -671,7 +671,7 @@ class HIDGamepad(context: Context, var config: GamepadConfiguration) : HIDPeriph
 
     fun setButton(button: UByte, press: Boolean)
     {
-        val b = button.toByte()
+        val b = button.toInt()
 
         val index = (b - 1) / 8
         val bit = (b - 1) % 8
@@ -950,7 +950,7 @@ class HIDGamepad(context: Context, var config: GamepadConfiguration) : HIDPeriph
 
     class GamepadConfiguration
     {
-        var controllerType: Byte = CONTROLLER_TYPE_GAMEPAD
+        var controllerType: UByte = CONTROLLER_TYPE_GAMEPAD
         var autoReport: Boolean = true
         var hidReportId: Byte = BLE.REPORT_ID_GAMEPAD
         var buttonCount: Short = 16
@@ -1046,200 +1046,200 @@ class HIDGamepad(context: Context, var config: GamepadConfiguration) : HIDPeriph
     }
 
     companion object {
-        const val POSSIBLE_SPECIAL_BUTTONS = 8
-        const val POSSIBLE_AXES = 8
-        const val POSSIBLE_SIMULATION_CONTROLS = 5
+        val POSSIBLE_SPECIAL_BUTTONS = 8
+        val POSSIBLE_AXES = 8
+        val POSSIBLE_SIMULATION_CONTROLS = 5
 
-        const val CONTROLLER_TYPE_JOYSTICK: Byte = 0x04
-        const val CONTROLLER_TYPE_GAMEPAD: Byte = 0x05
-        const val CONTROLLER_TYPE_MULTI_AXIS: Byte = 0x08
+        val CONTROLLER_TYPE_JOYSTICK: UByte = 0x04.toUByte()
+        val CONTROLLER_TYPE_GAMEPAD: UByte = 0x05.toUByte()
+        val CONTROLLER_TYPE_MULTI_AXIS: UByte = 0x08.toUByte()
 
-        const val BUTTON_1: Byte = 0x1
-        const val BUTTON_2: Byte = 0x2
-        const val BUTTON_3: Byte = 0x3
-        const val BUTTON_4: Byte = 0x4
-        const val BUTTON_5: Byte = 0x5
-        const val BUTTON_6: Byte = 0x6
-        const val BUTTON_7: Byte = 0x7
-        const val BUTTON_8: Byte = 0x8
+        val BUTTON_1: UByte = 0x1.toUByte()
+        val BUTTON_2: UByte = 0x2.toUByte()
+        val BUTTON_3: UByte = 0x3.toUByte()
+        val BUTTON_4: UByte = 0x4.toUByte()
+        val BUTTON_5: UByte = 0x5.toUByte()
+        val BUTTON_6: UByte = 0x6.toUByte()
+        val BUTTON_7: UByte = 0x7.toUByte()
+        val BUTTON_8: UByte = 0x8.toUByte()
 
-        const val BUTTON_9: Byte = 0x9
-        const val BUTTON_10: Byte = 0xa
-        const val BUTTON_11: Byte = 0xb
-        const val BUTTON_12: Byte = 0xc
-        const val BUTTON_13: Byte = 0xd
-        const val BUTTON_14: Byte = 0xe
-        const val BUTTON_15: Byte = 0xf
-        const val BUTTON_16: Byte = 0x10
+        val BUTTON_9: UByte = 0x9.toUByte()
+        val BUTTON_10: UByte = 0xa.toUByte()
+        val BUTTON_11: UByte = 0xb.toUByte()
+        val BUTTON_12: UByte = 0xc.toUByte()
+        val BUTTON_13: UByte = 0xd.toUByte()
+        val BUTTON_14: UByte = 0xe.toUByte()
+        val BUTTON_15: UByte = 0xf.toUByte()
+        val BUTTON_16: UByte = 0x10.toUByte()
 
-        const val BUTTON_17: Byte = 0x11
-        const val BUTTON_18: Byte = 0x12
-        const val BUTTON_19: Byte = 0x13
-        const val BUTTON_20: Byte = 0x14
-        const val BUTTON_21: Byte = 0x15
-        const val BUTTON_22: Byte = 0x16
-        const val BUTTON_23: Byte = 0x17
-        const val BUTTON_24: Byte = 0x18
+        val BUTTON_17: UByte = 0x11.toUByte()
+        val BUTTON_18: UByte = 0x12.toUByte()
+        val BUTTON_19: UByte = 0x13.toUByte()
+        val BUTTON_20: UByte = 0x14.toUByte()
+        val BUTTON_21: UByte = 0x15.toUByte()
+        val BUTTON_22: UByte = 0x16.toUByte()
+        val BUTTON_23: UByte = 0x17.toUByte()
+        val BUTTON_24: UByte = 0x18.toUByte()
 
-        const val BUTTON_25: Byte = 0x19
-        const val BUTTON_26: Byte = 0x1a
-        const val BUTTON_27: Byte = 0x1b
-        const val BUTTON_28: Byte = 0x1c
-        const val BUTTON_29: Byte = 0x1d
-        const val BUTTON_30: Byte = 0x1e
-        const val BUTTON_31: Byte = 0x1f
-        const val BUTTON_32: Byte = 0x20
+        val BUTTON_25: UByte = 0x19.toUByte()
+        val BUTTON_26: UByte = 0x1a.toUByte()
+        val BUTTON_27: UByte = 0x1b.toUByte()
+        val BUTTON_28: UByte = 0x1c.toUByte()
+        val BUTTON_29: UByte = 0x1d.toUByte()
+        val BUTTON_30: UByte = 0x1e.toUByte()
+        val BUTTON_31: UByte = 0x1f.toUByte()
+        val BUTTON_32: UByte = 0x20.toUByte()
 
-        const val BUTTON_33: Byte = 0x21
-        const val BUTTON_34: Byte = 0x22
-        const val BUTTON_35: Byte = 0x23
-        const val BUTTON_36: Byte = 0x24
-        const val BUTTON_37: Byte = 0x25
-        const val BUTTON_38: Byte = 0x26
-        const val BUTTON_39: Byte = 0x27
-        const val BUTTON_40: Byte = 0x28
+        val BUTTON_33: UByte = 0x21.toUByte()
+        val BUTTON_34: UByte = 0x22.toUByte()
+        val BUTTON_35: UByte = 0x23.toUByte()
+        val BUTTON_36: UByte = 0x24.toUByte()
+        val BUTTON_37: UByte = 0x25.toUByte()
+        val BUTTON_38: UByte = 0x26.toUByte()
+        val BUTTON_39: UByte = 0x27.toUByte()
+        val BUTTON_40: UByte = 0x28.toUByte()
 
-        const val BUTTON_41: Byte = 0x29
-        const val BUTTON_42: Byte = 0x2a
-        const val BUTTON_43: Byte = 0x2b
-        const val BUTTON_44: Byte = 0x2c
-        const val BUTTON_45: Byte = 0x2d
-        const val BUTTON_46: Byte = 0x2e
-        const val BUTTON_47: Byte = 0x2f
-        const val BUTTON_48: Byte = 0x30
+        val BUTTON_41: UByte = 0x29.toUByte()
+        val BUTTON_42: UByte = 0x2a.toUByte()
+        val BUTTON_43: UByte = 0x2b.toUByte()
+        val BUTTON_44: UByte = 0x2c.toUByte()
+        val BUTTON_45: UByte = 0x2d.toUByte()
+        val BUTTON_46: UByte = 0x2e.toUByte()
+        val BUTTON_47: UByte = 0x2f.toUByte()
+        val BUTTON_48: UByte = 0x30.toUByte()
 
-        const val BUTTON_49: Byte = 0x31
-        const val BUTTON_50: Byte = 0x32
-        const val BUTTON_51: Byte = 0x33
-        const val BUTTON_52: Byte = 0x34
-        const val BUTTON_53: Byte = 0x35
-        const val BUTTON_54: Byte = 0x36
-        const val BUTTON_55: Byte = 0x37
-        const val BUTTON_56: Byte = 0x38
+        val BUTTON_49: UByte = 0x31.toUByte()
+        val BUTTON_50: UByte = 0x32.toUByte()
+        val BUTTON_51: UByte = 0x33.toUByte()
+        val BUTTON_52: UByte = 0x34.toUByte()
+        val BUTTON_53: UByte = 0x35.toUByte()
+        val BUTTON_54: UByte = 0x36.toUByte()
+        val BUTTON_55: UByte = 0x37.toUByte()
+        val BUTTON_56: UByte = 0x38.toUByte()
 
-        const val BUTTON_57: Byte = 0x39
-        const val BUTTON_58: Byte = 0x3a
-        const val BUTTON_59: Byte = 0x3b
-        const val BUTTON_60: Byte = 0x3c
-        const val BUTTON_61: Byte = 0x3d
-        const val BUTTON_62: Byte = 0x3e
-        const val BUTTON_63: Byte = 0x3f
-        const val BUTTON_64: Byte = 0x40
+        val BUTTON_57: UByte = 0x39.toUByte()
+        val BUTTON_58: UByte = 0x3a.toUByte()
+        val BUTTON_59: UByte = 0x3b.toUByte()
+        val BUTTON_60: UByte = 0x3c.toUByte()
+        val BUTTON_61: UByte = 0x3d.toUByte()
+        val BUTTON_62: UByte = 0x3e.toUByte()
+        val BUTTON_63: UByte = 0x3f.toUByte()
+        val BUTTON_64: UByte = 0x40.toUByte()
 
-        const val BUTTON_65: Byte = 0x41
-        const val BUTTON_66: Byte = 0x42
-        const val BUTTON_67: Byte = 0x43
-        const val BUTTON_68: Byte = 0x44
-        const val BUTTON_69: Byte = 0x45
-        const val BUTTON_70: Byte = 0x46
-        const val BUTTON_71: Byte = 0x47
-        const val BUTTON_72: Byte = 0x48
+        val BUTTON_65: UByte = 0x41.toUByte()
+        val BUTTON_66: UByte = 0x42.toUByte()
+        val BUTTON_67: UByte = 0x43.toUByte()
+        val BUTTON_68: UByte = 0x44.toUByte()
+        val BUTTON_69: UByte = 0x45.toUByte()
+        val BUTTON_70: UByte = 0x46.toUByte()
+        val BUTTON_71: UByte = 0x47.toUByte()
+        val BUTTON_72: UByte = 0x48.toUByte()
 
-        const val BUTTON_73: Byte = 0x49
-        const val BUTTON_74: Byte = 0x4a
-        const val BUTTON_75: Byte = 0x4b
-        const val BUTTON_76: Byte = 0x4c
-        const val BUTTON_77: Byte = 0x4d
-        const val BUTTON_78: Byte = 0x4e
-        const val BUTTON_79: Byte = 0x4f
-        const val BUTTON_80: Byte = 0x50
+        val BUTTON_73: UByte = 0x49.toUByte()
+        val BUTTON_74: UByte = 0x4a.toUByte()
+        val BUTTON_75: UByte = 0x4b.toUByte()
+        val BUTTON_76: UByte = 0x4c.toUByte()
+        val BUTTON_77: UByte = 0x4d.toUByte()
+        val BUTTON_78: UByte = 0x4e.toUByte()
+        val BUTTON_79: UByte = 0x4f.toUByte()
+        val BUTTON_80: UByte = 0x50.toUByte()
 
-        const val BUTTON_81: Byte = 0x51
-        const val BUTTON_82: Byte = 0x52
-        const val BUTTON_83: Byte = 0x53
-        const val BUTTON_84: Byte = 0x54
-        const val BUTTON_85: Byte = 0x55
-        const val BUTTON_86: Byte = 0x56
-        const val BUTTON_87: Byte = 0x57
-        const val BUTTON_88: Byte = 0x58
+        val BUTTON_81: UByte = 0x51.toUByte()
+        val BUTTON_82: UByte = 0x52.toUByte()
+        val BUTTON_83: UByte = 0x53.toUByte()
+        val BUTTON_84: UByte = 0x54.toUByte()
+        val BUTTON_85: UByte = 0x55.toUByte()
+        val BUTTON_86: UByte = 0x56.toUByte()
+        val BUTTON_87: UByte = 0x57.toUByte()
+        val BUTTON_88: UByte = 0x58.toUByte()
 
-        const val BUTTON_89: Byte = 0x59
-        const val BUTTON_90: Byte = 0x5a
-        const val BUTTON_91: Byte = 0x5b
-        const val BUTTON_92: Byte = 0x5c
-        const val BUTTON_93: Byte = 0x5d
-        const val BUTTON_94: Byte = 0x5e
-        const val BUTTON_95: Byte = 0x5f
-        const val BUTTON_96: Byte = 0x60
+        val BUTTON_89: UByte = 0x59.toUByte()
+        val BUTTON_90: UByte = 0x5a.toUByte()
+        val BUTTON_91: UByte = 0x5b.toUByte()
+        val BUTTON_92: UByte = 0x5c.toUByte()
+        val BUTTON_93: UByte = 0x5d.toUByte()
+        val BUTTON_94: UByte = 0x5e.toUByte()
+        val BUTTON_95: UByte = 0x5f.toUByte()
+        val BUTTON_96: UByte = 0x60.toUByte()
 
-        const val BUTTON_97: Byte = 0x61
-        const val BUTTON_98: Byte = 0x62
-        const val BUTTON_99: Byte = 0x63
-        const val BUTTON_100: Byte = 0x64
-        const val BUTTON_101: Byte = 0x65
-        const val BUTTON_102: Byte = 0x66
-        const val BUTTON_103: Byte = 0x67
-        const val BUTTON_104: Byte = 0x68
+        val BUTTON_97: UByte = 0x61.toUByte()
+        val BUTTON_98: UByte = 0x62.toUByte()
+        val BUTTON_99: UByte = 0x63.toUByte()
+        val BUTTON_100: UByte = 0x64.toUByte()
+        val BUTTON_101: UByte = 0x65.toUByte()
+        val BUTTON_102: UByte = 0x66.toUByte()
+        val BUTTON_103: UByte = 0x67.toUByte()
+        val BUTTON_104: UByte = 0x68.toUByte()
 
-        const val BUTTON_105: Byte = 0x69
-        const val BUTTON_106: Byte = 0x6a
-        const val BUTTON_107: Byte = 0x6b
-        const val BUTTON_108: Byte = 0x6c
-        const val BUTTON_109: Byte = 0x6d
-        const val BUTTON_110: Byte = 0x6e
-        const val BUTTON_111: Byte = 0x6f
-        const val BUTTON_112: Byte = 0x70
+        val BUTTON_105: UByte = 0x69.toUByte()
+        val BUTTON_106: UByte = 0x6a.toUByte()
+        val BUTTON_107: UByte = 0x6b.toUByte()
+        val BUTTON_108: UByte = 0x6c.toUByte()
+        val BUTTON_109: UByte = 0x6d.toUByte()
+        val BUTTON_110: UByte = 0x6e.toUByte()
+        val BUTTON_111: UByte = 0x6f.toUByte()
+        val BUTTON_112: UByte = 0x70.toUByte()
 
-        const val BUTTON_113: Byte = 0x71
-        const val BUTTON_114: Byte = 0x72
-        const val BUTTON_115: Byte = 0x73
-        const val BUTTON_116: Byte = 0x74
-        const val BUTTON_117: Byte = 0x75
-        const val BUTTON_118: Byte = 0x76
-        const val BUTTON_119: Byte = 0x77
-        const val BUTTON_120: Byte = 0x78
+        val BUTTON_113: UByte = 0x71.toUByte()
+        val BUTTON_114: UByte = 0x72.toUByte()
+        val BUTTON_115: UByte = 0x73.toUByte()
+        val BUTTON_116: UByte = 0x74.toUByte()
+        val BUTTON_117: UByte = 0x75.toUByte()
+        val BUTTON_118: UByte = 0x76.toUByte()
+        val BUTTON_119: UByte = 0x77.toUByte()
+        val BUTTON_120: UByte = 0x78.toUByte()
 
-        const val BUTTON_121: Byte = 0x79
-        const val BUTTON_122: Byte = 0x7a
-        const val BUTTON_123: Byte = 0x7b
-        const val BUTTON_124: Byte = 0x7c
-        const val BUTTON_125: Byte = 0x7d
-        const val BUTTON_126: Byte = 0x7e
-        const val BUTTON_127: Byte = 0x7f
-        const val BUTTON_128: Byte = (0x80).toByte()
+        val BUTTON_121: UByte = 0x79.toUByte()
+        val BUTTON_122: UByte = 0x7a.toUByte()
+        val BUTTON_123: UByte = 0x7b.toUByte()
+        val BUTTON_124: UByte = 0x7c.toUByte()
+        val BUTTON_125: UByte = 0x7d.toUByte()
+        val BUTTON_126: UByte = 0x7e.toUByte()
+        val BUTTON_127: UByte = 0x7f.toUByte()
+        val BUTTON_128: UByte = 0x80.toUByte()
 
-        const val DPAD_CENTERED: Byte = 0
-        const val DPAD_UP: Byte = 1
-        const val DPAD_UP_RIGHT: Byte = 2
-        const val DPAD_RIGHT: Byte = 3
-        const val DPAD_DOWN_RIGHT: Byte = 4
-        const val DPAD_DOWN: Byte = 5
-        const val DPAD_DOWN_LEFT: Byte = 6
-        const val DPAD_LEFT: Byte = 7
-        const val DPAD_UP_LEFT: Byte = 8
+        val DPAD_CENTERED: UByte = 0.toUByte()
+        val DPAD_UP: UByte = 1.toUByte()
+        val DPAD_UP_RIGHT: UByte = 2.toUByte()
+        val DPAD_RIGHT: UByte = 3.toUByte()
+        val DPAD_DOWN_RIGHT: UByte = 4.toUByte()
+        val DPAD_DOWN: UByte = 5.toUByte()
+        val DPAD_DOWN_LEFT: UByte = 6.toUByte()
+        val DPAD_LEFT: UByte = 7.toUByte()
+        val DPAD_UP_LEFT: UByte = 8.toUByte()
 
-        const val HAT_CENTERED: Byte = 0
-        const val HAT_UP: Byte = 1
-        const val HAT_UP_RIGHT: Byte = 2
-        const val HAT_RIGHT: Byte = 3
-        const val HAT_DOWN_RIGHT: Byte = 4
-        const val HAT_DOWN: Byte = 5
-        const val HAT_DOWN_LEFT: Byte = 6
-        const val HAT_LEFT: Byte = 7
-        const val HAT_UP_LEFT: Byte = 8
+        val HAT_CENTERED: UByte = 0.toUByte()
+        val HAT_UP: UByte = 1.toUByte()
+        val HAT_UP_RIGHT: UByte = 2.toUByte()
+        val HAT_RIGHT: UByte = 3.toUByte()
+        val HAT_DOWN_RIGHT: UByte = 4.toUByte()
+        val HAT_DOWN: UByte = 5.toUByte()
+        val HAT_DOWN_LEFT: UByte = 6.toUByte()
+        val HAT_LEFT: UByte = 7.toUByte()
+        val HAT_UP_LEFT: UByte = 8.toUByte()
 
-        const val X_AXIS = 0
-        const val Y_AXIS = 1
-        const val Z_AXIS = 2
-        const val RX_AXIS = 3
-        const val RY_AXIS = 4
-        const val RZ_AXIS = 5
-        const val SLIDER1 = 6
-        const val SLIDER2 = 7
+        val X_AXIS = 0
+        val Y_AXIS = 1
+        val Z_AXIS = 2
+        val RX_AXIS = 3
+        val RY_AXIS = 4
+        val RZ_AXIS = 5
+        val SLIDER1 = 6
+        val SLIDER2 = 7
 
-        const val RUDDER = 0
-        const val THROTTLE = 1
-        const val ACCELERATOR = 2
-        const val BRAKE = 3
-        const val STEERING = 4
+        val RUDDER = 0
+        val THROTTLE = 1
+        val ACCELERATOR = 2
+        val BRAKE = 3
+        val STEERING = 4
 
-        const val START_BUTTON = 0
-        const val SELECT_BUTTON = 1
-        const val MENU_BUTTON = 2
-        const val HOME_BUTTON = 3
-        const val BACK_BUTTON = 4
-        const val VOLUME_INC_BUTTON = 5
-        const val VOLUME_DEC_BUTTON = 6
-        const val VOLUME_MUTE_BUTTON = 7
+        val START_BUTTON = 0
+        val SELECT_BUTTON = 1
+        val MENU_BUTTON = 2
+        val HOME_BUTTON = 3
+        val BACK_BUTTON = 4
+        val VOLUME_INC_BUTTON = 5
+        val VOLUME_DEC_BUTTON = 6
+        val VOLUME_MUTE_BUTTON = 7
     }
 }

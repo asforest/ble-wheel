@@ -322,19 +322,23 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         when (keyCode)
         {
             KeyEvent.KEYCODE_VOLUME_UP -> {
-                hidGamepad.press(HIDGamepad.BUTTON_127.toUByte())
+                hidGamepad.press(HIDGamepad.BUTTON_127)
                 hidGamepad.sendReport()
                 Thread.sleep(20)
-                hidGamepad.release(HIDGamepad.BUTTON_127.toUByte())
+                hidGamepad.release(HIDGamepad.BUTTON_127)
                 hidGamepad.sendReport()
             }
 
             KeyEvent.KEYCODE_VOLUME_DOWN -> {
-                hidGamepad.press(HIDGamepad.BUTTON_128.toUByte())
+                hidGamepad.press(HIDGamepad.BUTTON_128)
                 hidGamepad.sendReport()
                 Thread.sleep(20)
-                hidGamepad.release(HIDGamepad.BUTTON_128.toUByte())
+                hidGamepad.release(HIDGamepad.BUTTON_128)
                 hidGamepad.sendReport()
+            }
+
+            KeyEvent.KEYCODE_BACK -> {
+                finish()
             }
 
             else -> return false
