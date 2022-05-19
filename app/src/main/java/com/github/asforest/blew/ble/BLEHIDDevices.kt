@@ -29,6 +29,10 @@ class BLEHIDDevices(
 
     // Mandatory characteristic for device info service
     val pnpCharacteristic = deviceInfoService.createCharacteristic(BLE.CHARACTERISTIC_PNP_0x2A50, PT_READ, PM_R)
+    // Optional characteristic for device info service
+    val manufacturerNameCharacteristic = deviceInfoService.createCharacteristic(BLE.CHARACTERISTIC_MANUFACTURER_NAME_0x2A29, PT_READ, PM_R)
+    val modelNumberCharacteristic = deviceInfoService.createCharacteristic(BLE.CHARACTERISTIC_MODEL_NUMBER_0x2A24, PT_READ, PM_R)
+    val serialNumberCharacteristic = deviceInfoService.createCharacteristic(BLE.CHARACTERISTIC_SERIAL_NUMBER_0x2A25, PT_READ, PM_R)
 
     // Mandatory characteristics for HID service
     val hidInformationCharacteristic = hidService.createCharacteristic(BLE.CHARACTERISTIC_HID_INFORMATION_0x2A4A, PT_READ, PM_R)
@@ -134,10 +138,25 @@ class BLEHIDDevices(
     /**
      * Set manufacturer name
      */
-    fun manufacturer(name: String)
+    fun setManufacturer(name: String)
     {
-        val manufacturerCharacteristic = deviceInfoService.createCharacteristic(BLE.CHARACTERISTIC_MANUFACTURER_NAME_0x2A29, PT_READ, PM_R)
-        manufacturerCharacteristic.value = name.toByteArray()
+        manufacturerNameCharacteristic.value = name.toByteArray()
+    }
+
+    /**
+     * Set device name
+     */
+    fun setDeviceName(name: String)
+    {
+        modelNumberCharacteristic.value = name.toByteArray()
+    }
+
+    /**
+     * Set serial number
+     */
+    fun setSerialNumber(serial: String)
+    {
+        serialNumberCharacteristic.value = serial.toByteArray()
     }
 
     /**

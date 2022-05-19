@@ -1,6 +1,15 @@
 package com.github.asforest.blew.ble
 
-import android.bluetooth.*
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
+import android.bluetooth.BluetoothGattServer
+import android.bluetooth.BluetoothGattServerCallback
+import android.bluetooth.BluetoothGattService
+import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothProfile
 import android.bluetooth.le.AdvertiseCallback
 import android.bluetooth.le.AdvertiseData
 import android.bluetooth.le.AdvertiseSettings
@@ -14,6 +23,10 @@ import com.github.asforest.blew.event.Event
 
 abstract class HIDPeripheral(context: Context)
 {
+    val manufacturer = "manufacturer"
+    val deviceName = "device-name"
+    val serialNumber = "87654321"
+
     val handler = Handler(context.mainLooper)
     val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     val adapter: BluetoothAdapter = manager.adapter
@@ -31,6 +44,12 @@ abstract class HIDPeripheral(context: Context)
     val onCharacteristicWriteEvent = Event<CharacteristicWriteEvent>()
     val onDescriptorReadEvent = Event<DescriptorReadEvent>()
     val onDescriptorWriteEvent = Event<DescriptorWriteEvent>()
+
+    init {
+        hid.setManufacturer(manufacturer)
+        hid.setDeviceName(deviceName)
+        hid.setSerialNumber(serialNumber)
+    }
 
     fun setupAdvertiser(): BluetoothLeAdvertiser
     {

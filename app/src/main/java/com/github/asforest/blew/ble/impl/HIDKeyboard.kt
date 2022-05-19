@@ -11,7 +11,7 @@ class HIDKeyboard(context: Context) : HIDPeripheral(context)
     val outputReport = hid.outputReport(BLE.REPORT_ID_KEYBOARD)
 
     init {
-        hid.manufacturer("Asf")
+        hid.setManufacturer("Asf")
         hid.pnp(0x02, 0x05ac, (0x820a).toShort(), 0x0210)
         hid.hidInfo(0x00, 0x01)
         hid.reportMap(HID_REPORT_MAP_KEYBOARD)
