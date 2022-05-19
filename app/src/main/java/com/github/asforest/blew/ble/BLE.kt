@@ -1,6 +1,7 @@
 package com.github.asforest.blew.ble
 
-import java.util.*
+import java.util.UUID
+
 
 object BLE {
     /**
@@ -21,7 +22,7 @@ object BLE {
     /**
      * HID Service
      */
-    val SERVICE_BLE_HID_0x1812 = From(0x1812)
+    val SERVICE_HID_0x1812 = From(0x1812)
     val CHARACTERISTIC_HID_INFORMATION_0x2A4A = From(0x2A4A)
     val CHARACTERISTIC_HID_REPORT_MAP_0x2A4B = From(0x2A4B)
     val CHARACTERISTIC_HID_CONTROL_POINT_0x2A4C = From(0x2A4C)
@@ -35,49 +36,11 @@ object BLE {
     val DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION_0x2902 = From(0x2902)
     val DESCRIPTOR_CLIENT_CHARACTERISTIC_PRESENTATION_0x2904 = From(0x2904)
 
-    val CLEAN_KEY_REPORT = byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0)
-
     fun From(value: Int): UUID = UUID.fromString("0000" + String.format("%04X", value and 0xffff) + "-0000-1000-8000-00805F9B34FB")
 
     var REPORT_ID_KEYBOARD: Byte = 0x01
     var REPORT_ID_MEDIA_KEYS: Byte = 0x02
-
-    val HID_REPORT_MAP_KEYBOARD = byteArrayOf(
-        USAGE_PAGE(1),        0x01,  // USAGE_PAGE (Generic Desktop Ctrls)
-        USAGE(1),             0x06,  // USAGE (Keyboard)
-        COLLECTION(1),        0x01,  // COLLECTION (Application)
-        // ------------------------------------------------- Keyboard
-        REPORT_ID(1),         REPORT_ID_KEYBOARD,  //   REPORT_ID (1)
-        USAGE_PAGE(1),        0x07,                //   USAGE_PAGE (Kbrd/Keypad)
-        USAGE_MINIMUM(1),     0xE0.toByte(),       //   USAGE_MINIMUM (0xE0)
-        USAGE_MAXIMUM(1),     0xE7.toByte(),       //   USAGE_MAXIMUM (0xE7)
-        LOGICAL_MINIMUM(1),   0x00,                //   LOGICAL_MINIMUM (0)
-        LOGICAL_MAXIMUM(1),   0x01,                //   Logical Maximum (1)
-        REPORT_SIZE(1),       0x01,                //   REPORT_SIZE (1)
-        REPORT_COUNT(1),      0x08,                //   REPORT_COUNT (8)
-        INPUT(1),             0x02,                //   INPUT (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-        REPORT_COUNT(1),      0x01,                //   REPORT_COUNT (1) ; 1 byte (Reserved)
-        REPORT_SIZE(1),       0x08,                //   REPORT_SIZE (8)
-        INPUT(1),             0x01,                //   INPUT (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
-        REPORT_COUNT(1),      0x05,                //   REPORT_COUNT (5) ; 5 bits (Num lock, Caps lock, Scroll lock, Compose, Kana)
-        REPORT_SIZE(1),       0x01,                //   REPORT_SIZE (1)
-        USAGE_PAGE(1),        0x08,                //   USAGE_PAGE (LEDs)
-        USAGE_MINIMUM(1),     0x01,                //   USAGE_MINIMUM (0x01) ; Num Lock
-        USAGE_MAXIMUM(1),     0x05,                //   USAGE_MAXIMUM (0x05) ; Kana
-        OUTPUT(1),            0x02,                //   OUTPUT (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
-        REPORT_COUNT(1),      0x01,                //   REPORT_COUNT (1) ; 3 bits (Padding)
-        REPORT_SIZE(1),       0x03,                //   REPORT_SIZE (3)
-        OUTPUT(1),            0x01,                //   OUTPUT (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
-        REPORT_COUNT(1),      0x06,                //   REPORT_COUNT (6) ; 6 bytes (Keys)
-        REPORT_SIZE(1),       0x08,                //   REPORT_SIZE(8)
-        LOGICAL_MINIMUM(1),   0x00,                //   LOGICAL_MINIMUM(0)
-        LOGICAL_MAXIMUM(1),   0x65,                //   LOGICAL_MAXIMUM(0x65) ; 101 keys
-        USAGE_PAGE(1),        0x07,                //   USAGE_PAGE (Kbrd/Keypad)
-        USAGE_MINIMUM(1),     0x00,                //   USAGE_MINIMUM (0)
-        USAGE_MAXIMUM(1),     0x65,                //   USAGE_MAXIMUM (0x65)
-        INPUT(1),             0x00,                //   INPUT (Data,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
-        END_COLLECTION(0)
-    )
+    var REPORT_ID_GAMEPAD: Byte = 0x03
 
     /**
      * Main items

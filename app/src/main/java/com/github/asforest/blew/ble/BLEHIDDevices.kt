@@ -24,7 +24,7 @@ class BLEHIDDevices(
     val PM_WE = BluetoothGattCharacteristic.PERMISSION_WRITE_ENCRYPTED
 
     val deviceInfoService = BluetoothGattService(BLE.SERVICE_DEVICE_INFORMATION_0x180A, BluetoothGattService.SERVICE_TYPE_PRIMARY)
-    val hidService = BluetoothGattService(BLE.SERVICE_BLE_HID_0x1812, BluetoothGattService.SERVICE_TYPE_PRIMARY)
+    val hidService = BluetoothGattService(BLE.SERVICE_HID_0x1812, BluetoothGattService.SERVICE_TYPE_PRIMARY)
     val batteryService = BluetoothGattService(BLE.SERVICE_BATTERY_0x180F, BluetoothGattService.SERVICE_TYPE_PRIMARY);
 
     // Mandatory characteristic for device info service
@@ -53,11 +53,11 @@ class BLEHIDDevices(
         batteryLevelCharacteristic.createDescriptor(BLE.DESCRIPTOR_CLIENT_CHARACTERISTIC_PRESENTATION_0x2904, PT_READ)
         val batteryLevelDescriptor = BLE2904()
         batteryLevelDescriptor.format = BLE2904.FORMAT_UINT8
-        batteryLevelDescriptor.namespace = 1
-        batteryLevelDescriptor.unit = 0x27ad // 0x27AD represents percentage
+        batteryLevelDescriptor.namespace = 1u
+        batteryLevelDescriptor.unit = (0x27ad).toUShort() // 0x27AD represents percentage
         batteryLevelDescriptor.applyModification()
 
-        batteryLevelCharacteristic.value = byteArrayOf(34)
+        batteryLevelCharacteristic.value = byteArrayOf(99)
     }
 
     /**
@@ -164,13 +164,13 @@ class BLEHIDDevices(
     /**
      * Sets the Plug n Play characteristic value.
      */
-    fun pnp(sig: Byte, vid: Int, pid: Int, version: Int)
+    fun pnp(sig: Byte, vid: Short, pid: Short, version: Short)
     {
         pnpCharacteristic.value = byteArrayOf(
             sig,
-            (vid shr 8).toByte(), vid.toByte(),
-            (pid shr 8).toByte(), pid.toByte(),
-            (version shr 8).toByte(), version.toByte()
+            (vid.toInt() shr 8).toByte(), vid.toByte(),
+            (pid.toInt() shr 8).toByte(), pid.toByte(),
+            (version.toInt() shr 8).toByte(), version.toByte()
         )
     }
 

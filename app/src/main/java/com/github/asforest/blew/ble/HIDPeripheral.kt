@@ -48,7 +48,7 @@ abstract class HIDPeripheral(context: Context)
             val advertiseData = AdvertiseData.Builder()
                 .setIncludeTxPowerLevel(true)
                 .setIncludeDeviceName(true)
-                .addServiceUuid(ParcelUuid.fromString(BLE.SERVICE_BLE_HID_0x1812.toString()))
+                .addServiceUuid(ParcelUuid.fromString(BLE.SERVICE_HID_0x1812.toString()))
                 .build()
 
             advertiser.startAdvertising(advertiseSettings, advertiseData, advertiseCallback)
