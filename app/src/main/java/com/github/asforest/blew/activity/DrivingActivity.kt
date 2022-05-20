@@ -44,6 +44,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
     val referenceRotationText: TextView by lazy { findViewById(R.id.reference_rotation) }
     val primaryButton: Button by lazy { findViewById(R.id.button_center) }
     val accelerator_bar: ProgressBar by lazy { findViewById(R.id.accelerator_bar) }
+    val brake_bar: ProgressBar by lazy { findViewById(R.id.brake_bar) }
     val functionalButtons by lazy { arrayOf<Button>(
         findViewById(R.id.gamepad_button_1),
         findViewById(R.id.gamepad_button_2),
@@ -152,9 +153,11 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
                 true
             }
         }
+        
+        updateConfigurationFile()
 
         // 定时报告数据
-        repeatedlyRun(50) { reportSensorData() }
+        repeatedlyRun(30) { reportSensorData() }
 
         // 处理设备断开事件
         hidGamepad.onDeviceConnectionStateChangeEvent.once {
@@ -165,7 +168,6 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         // 保持屏幕开启
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        updateConfigurationFile()
 
         // 首次报告电量 + 定时刷新电量
         registerReceiver(batteryLevelChangeReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
@@ -303,7 +305,9 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         // 更新UI
         primaryButton.rotation = -currentSteeringAngle
         primaryButton.text = "Z: ${a(currentSteeringAngle)} / ${a(accumulatedSteeringAngle)}\nX: ${a(currentAcceleratorAngle)} / ${a(accumulatedAcceleratorAngle)}"
-        accelerator_bar.progress = 100 - (100 * acceleratorBarProgress).toInt()
+        val ab = 200 - (200 * acceleratorBarProgress).toInt()
+        accelerator_bar.progress = max(0, min(100, ab - 100))
+        brake_bar.progress = max(0, min(100, 100 - ab))
     }
 
     fun updateConfigurationFile()
