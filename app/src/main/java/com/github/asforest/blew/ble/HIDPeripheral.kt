@@ -61,38 +61,35 @@ abstract class HIDPeripheral(context: Context)
 
     fun startAdvertising()
     {
-        handler.post {
-            // set up advertising setting
-            val advertiseSettings = AdvertiseSettings.Builder()
-                .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
-                .setConnectable(true)
-                .setTimeout(0)
-                .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
-                .build()
+        // set up advertising setting
+        val advertiseSettings = AdvertiseSettings.Builder()
+            .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
+            .setConnectable(true)
+            .setTimeout(0)
+            .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
+            .build()
 
-            // set up advertising data
-            val advertiseData = AdvertiseData.Builder()
-                .setIncludeTxPowerLevel(true)
-                .setIncludeDeviceName(true)
-                .addServiceUuid(ParcelUuid.fromString(BLE.SERVICE_HID_0x1812.toString()))
-                .build()
+        // set up advertising data
+        val advertiseData = AdvertiseData.Builder()
+            .setIncludeTxPowerLevel(true)
+            .setIncludeDeviceName(true)
+            .addServiceUuid(ParcelUuid.fromString(BLE.SERVICE_HID_0x1812.toString()))
+            .build()
 
-            advertiser.startAdvertising(advertiseSettings, advertiseData, advertiseCallback)
-        }
+        advertiser.startAdvertising(advertiseSettings, advertiseData, advertiseCallback)
     }
 
     fun stopAdvertising()
     {
-        handler.post {
-            try {
-                advertiser.stopAdvertising(advertiseCallback)
-                for (device in onlineDevices.values)
-                    gattServer.cancelConnection(device)
-                gattServer.close()
-            } catch (ignored: IllegalStateException) {
-                // BT Adapter is not turned ON
-            }
-        }
+        advertiser.stopAdvertising(advertiseCallback)
+    }
+
+    fun close()
+    {
+        for (device in onlineDevices.values)
+            gattServer.cancelConnection(device)
+
+        gattServer.close()
     }
 
     class AdvCallback : AdvertiseCallback() {

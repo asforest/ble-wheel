@@ -97,6 +97,7 @@ class MainActivity : AppCompatActivity()
         super.onDestroy()
 
         gamepad?.stopAdvertising()
+        gamepad?.close()
     }
 
     fun initDevicesList()
