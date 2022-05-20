@@ -55,34 +55,34 @@ class MainActivity : AppCompatActivity()
             gamepad?.setAccelerator(0)
             gamepad?.setBrake(0)
             gamepad?.setSteering(0)
+
+            gamepad!!.onCharacteristicReadEvent.always {
+                if (it.characteristic.uuid == BLE.CHARACTERISTIC_HID_REPORT_MAP_0x2A4B)
+                    startActivity(Intent(this@MainActivity, DrivingActivity::class.java))
+            }
+
+            findViewById<Button>(R.id.send).setOnClickListener {
+                startActivity(Intent(this@MainActivity, DrivingActivity::class.java))
+            }
+
+            // 请求外部存储读写权限
+            viewModel.viewModelScope.launch {
+                val isGranted = requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                if (!isGranted)
+                {
+                    popupDialog("没有权限", "请授权外部存储设备的读写权限！") {
+                        finish()
+                    }
+                }
+            }
+
+            initDevicesList()
         } catch (e: Exception) {
-            popupDialog("BLE启动时发生错误", e.message ?: "没有异常信息") {
+            popupDialog("启动时发生错误", e.stackTraceToString()) {
                 finish()
                 throw e
             }
         }
-
-        gamepad!!.onCharacteristicReadEvent.always {
-            if (it.characteristic.uuid == BLE.CHARACTERISTIC_HID_REPORT_MAP_0x2A4B)
-                startActivity(Intent(this@MainActivity, DrivingActivity::class.java))
-        }
-
-        findViewById<Button>(R.id.send).setOnClickListener {
-            startActivity(Intent(this@MainActivity, DrivingActivity::class.java))
-        }
-
-        // 请求外部存储读写权限
-        viewModel.viewModelScope.launch {
-            val isGranted = requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            if (!isGranted)
-            {
-                popupDialog("没有权限", "请授权外部存储设备的读写权限！") {
-                    this@MainActivity.finish()
-                }
-            }
-        }
-
-        initDevicesList()
     }
 
     override fun onDestroy()
