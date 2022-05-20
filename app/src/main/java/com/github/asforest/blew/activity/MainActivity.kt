@@ -76,6 +76,13 @@ class MainActivity : AppCompatActivity()
                 }
             }
 
+            gamepad?.onDeviceConnectionStateChangeEvent?.always {
+                if (it)
+                    gamepad?.stopAdvertising()
+                else
+                    gamepad?.startAdvertising()
+            }
+
             initDevicesList()
         } catch (e: Exception) {
             popupDialog("启动时发生错误", e.stackTraceToString()) {
