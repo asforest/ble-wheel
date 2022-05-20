@@ -12,6 +12,7 @@ import android.hardware.SensorManager
 import android.os.BatteryManager
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -95,8 +96,9 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         sensorManager.registerListener(this, rotationSensor, SensorManager.SENSOR_DELAY_GAME)
 
         // 监听按钮点击
-        primaryButton.setOnClickListener {
-            // 记录下参考值
+
+        // 重新记录下参考值
+        primaryButton.setOnLongClickListener {
             if (referenceRotation == null)
                 referenceRotation = Matrix4f()
             referenceRotation!!.set(currentRotation)
@@ -107,12 +109,13 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
             accumulatedAcceleratorAngle = 0f
             previousSteeringAngle = null
             previousAcceleratorAngleX = null
+            true
         }
 
-        primaryButton.setOnLongClickListener {
+        // 启用/禁用数据报告
+        primaryButton.setOnClickListener {
             reportingEnabled = !reportingEnabled
-            primaryButton.alpha = if (reportingEnabled) 1f else 0.5f
-            true
+            primaryButton.alpha = if (reportingEnabled) 1f else 0.4f
         }
 
         for ((index, button) in functionalButtons.withIndex())
@@ -295,6 +298,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
 //            hidGamepad.setBrake(hidValue)
 //            hidGamepad.setAccelerator((65535 - (hidValue.toInt() + 32768) - 32768).toShort())
 
+//            Log.i("App", "Report Acc: $hidValue")
             hidGamepad.setAccelerator(hidValue)
             reportOnce()
 
