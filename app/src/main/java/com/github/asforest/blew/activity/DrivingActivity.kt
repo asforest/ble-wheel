@@ -78,6 +78,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
 
     var steeringHalfConstraint: Int = 270
     var acceleratorHalfConstraint: Int = 45
+    var reportPeriodMs: Int = 50
 
     var reportingEnabled = true // 为false时禁用所有旋转，也不向BLE报告陀螺仪数据
     var currentRotation: Matrix4f? = null
@@ -153,11 +154,11 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
                 true
             }
         }
-        
+
         updateConfigurationFile()
 
         // 定时报告数据
-        repeatedlyRun(30) { reportSensorData() }
+        repeatedlyRun(reportPeriodMs.toLong()) { reportSensorData() }
 
         // 处理设备断开事件
         hidGamepad.onDeviceConnectionStateChangeEvent.once {
@@ -167,7 +168,6 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
 
         // 保持屏幕开启
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-
 
         // 首次报告电量 + 定时刷新电量
         registerReceiver(batteryLevelChangeReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
@@ -261,7 +261,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
             accumulatedSteeringAngle += angleDelta(currentSteeringAngle, previousSteeringAngle!!)
 
             // 方向盘的最大旋转角度（一半）
-            val halfConstraint = 210f
+            val halfConstraint = steeringHalfConstraint.toFloat()
 
             // 归一化（默认位置是在0.5）
             val normalized = (Math.clamp(-halfConstraint, halfConstraint, accumulatedSteeringAngle) + halfConstraint) / (halfConstraint * 2)
@@ -283,7 +283,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
             accumulatedAcceleratorAngle += angleDelta(currentAcceleratorAngle, previousAcceleratorAngleX!!)
 
             // 最大旋转角度（一半）
-            val halfConstraint = 45f
+            val halfConstraint = acceleratorHalfConstraint.toFloat()
 
             // 归一化（默认位置是在0.5）
             val normalized = (Math.clamp(-halfConstraint, halfConstraint, accumulatedAcceleratorAngle) + halfConstraint) / (halfConstraint * 2)
@@ -321,6 +321,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
 
             root.put("steering_half_constraint", 270)
             root.put("accelerator_half_constraint", 45)
+            root.put("report_period", 50)
 
             for ((index, button) in functionalButtons.withIndex())
                 root.put("b${index + 1}", "b${index + 1}")
@@ -335,6 +336,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
 
         steeringHalfConstraint = root.optInt("steering_half_constraint", 270)
         acceleratorHalfConstraint = root.optInt("accelerator_half_constraint", 45)
+        reportPeriodMs = root.optInt("report_period", 50)
     }
 
     fun queryBatteryLevel(): Int
