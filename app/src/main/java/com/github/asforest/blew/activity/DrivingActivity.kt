@@ -132,6 +132,27 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
             }
         }
 
+        // 两个TextView也是按钮
+        for ((button, widget) in mapOf(HIDGamepad.BUTTON_125 to currentRotationText,
+            HIDGamepad.BUTTON_126 to referenceRotationText))
+        {
+            widget.setOnTouchListener { _, event ->
+                if (event.action == MotionEvent.ACTION_DOWN)
+                {
+                    hidGamepad.press(button)
+                    hidGamepad.sendReport()
+                }
+
+                if (event.action == MotionEvent.ACTION_UP)
+                {
+                    hidGamepad.release(button)
+                    hidGamepad.sendReport()
+                }
+
+                true
+            }
+        }
+
         // 定时报告数据
         repeatedlyRun(50) { reportSensorData() }
 
