@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.ProgressBar
@@ -31,6 +32,7 @@ import org.json.JSONObject
 import java.lang.Integer.min
 import kotlin.math.abs
 import kotlin.math.max
+
 
 class DrivingActivity : AppCompatActivity(), SensorEventListener
 {
@@ -147,6 +149,17 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         // 首次报告电量 + 定时刷新电量
         registerReceiver(batteryLevelChangeReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         onBatteryLevelChangeEvent.always { hidGamepad.hid.setBatteryLevel(max(0, min(100, it)).toByte()) }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean)
+    {
+        super.onWindowFocusChanged(hasFocus)
+
+        if (hasFocus)
+            window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or
+                    View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
     }
 
     override fun onDestroy()
