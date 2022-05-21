@@ -76,12 +76,12 @@ class MainActivity : AppCompatActivity()
                 }
             }
 
-            gamepad?.onDeviceConnectionStateChangeEvent?.always {
-                if (it)
-                    gamepad?.stopAdvertising()
-                else
-                    gamepad?.startAdvertising()
-            }
+//            gamepad?.onDeviceConnectionStateChangeEvent?.always {
+//                if (it)
+//                    gamepad?.stopAdvertising()
+//                else
+//                    gamepad?.startAdvertising()
+//            }
 
             initDevicesList()
         } catch (e: Exception) {

@@ -19,9 +19,10 @@ import android.os.Handler
 import android.os.ParcelUuid
 import android.util.Log
 import com.github.asforest.blew.event.Event
+import com.github.asforest.blew.util.AndroidUtils.popupDialog
 
 
-abstract class HIDPeripheral(context: Context)
+abstract class HIDPeripheral(val context: Context)
 {
     val manufacturer = "manufacturer"
     val deviceName = "device-name"
@@ -32,12 +33,13 @@ abstract class HIDPeripheral(context: Context)
     val adapter: BluetoothAdapter = manager.adapter
     val advertiser: BluetoothLeAdvertiser = setupAdvertiser()
     val gattCallback = GattServerCallback(this)
-    val advertiseCallback: AdvertiseCallback = AdvCallback()
+    val advertiseCallback: AdvertiseCallback = AdvCallback(this)
     val gattServer: BluetoothGattServer = manager.openGattServer(context, gattCallback)
     var onlineDevices: MutableMap<String, BluetoothDevice> = mutableMapOf()
     var currentDevice: BluetoothDevice? = null
     val hid: BLEHIDDevices = BLEHIDDevices(gattServer, this)
 
+    val onBleAdvertiseStart = Event<Boolean>()
     val onDeviceConnectionStateChangeEvent = Event<Boolean>()
     val onServiceAddEvent = Event<BluetoothGattService>()
     val onCharacteristicReadEvent = Event<CharacteristicReadEvent>()
@@ -92,10 +94,16 @@ abstract class HIDPeripheral(context: Context)
         gattServer.close()
     }
 
-    class AdvCallback : AdvertiseCallback() {
+    class AdvCallback(val ins: HIDPeripheral) : AdvertiseCallback() {
+        override fun onStartSuccess(settingsInEffect: AdvertiseSettings?)
+        {
+            ins.onBleAdvertiseStart.invoke(true)
+        }
+
         override fun onStartFailure(errorCode: Int)
         {
-            throw IllegalStateException("广播启动失败: errorCode: $errorCode")
+            ins.onBleAdvertiseStart.invoke(false)
+            ins.context.popupDialog("BLE广播启动失败", "error code: $errorCode")
         }
     }
 
