@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.view.KeyEvent
+import android.view.Menu
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
@@ -24,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.github.asforest.blew.R
 import com.github.asforest.blew.ble.impl.HIDGamepad
 import com.github.asforest.blew.event.Event
+import com.github.asforest.blew.util.AndroidUtils.popupDialog
 import com.github.asforest.blew.util.FileObj
 import org.joml.Math
 import org.joml.Matrix4f
@@ -176,6 +178,11 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         registerReceiver(batteryLevelChangeReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         onBatteryLevelChangeEvent.always { hidGamepad.hid.setBatteryLevel(max(0, min(100, it)).toByte()) }
     }
+
+//    override fun onMenuOpened(featureId: Int, menu: Menu): Boolean
+//    {
+//
+//    }
 
     override fun onWindowFocusChanged(hasFocus: Boolean)
     {
@@ -369,28 +376,45 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         }
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean = onKeyEvent(keyCode, true)
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean = onKeyEvent(keyCode, false)
+
+    private val pressedKeys = mutableSetOf<Int>()
+    fun onKeyEvent(keyCode: Int, press: Boolean): Boolean
     {
+        // 防止重复触发
+        if (press && !pressedKeys.add(keyCode))
+            return true
+
+        if (!press && !pressedKeys.remove(keyCode))
+            return true
+
         when (keyCode)
         {
             KeyEvent.KEYCODE_VOLUME_UP -> {
-                hidGamepad.press(HIDGamepad.BUTTON_127)
-                hidGamepad.sendReport()
-                Thread.sleep(20)
-                hidGamepad.release(HIDGamepad.BUTTON_127)
+                if (press)
+                    hidGamepad.press(HIDGamepad.BUTTON_127)
+                else
+                    hidGamepad.release(HIDGamepad.BUTTON_127)
                 hidGamepad.sendReport()
             }
 
             KeyEvent.KEYCODE_VOLUME_DOWN -> {
-                hidGamepad.press(HIDGamepad.BUTTON_128)
-                hidGamepad.sendReport()
-                Thread.sleep(20)
-                hidGamepad.release(HIDGamepad.BUTTON_128)
+                if (press)
+                    hidGamepad.press(HIDGamepad.BUTTON_128)
+                else
+                    hidGamepad.release(HIDGamepad.BUTTON_128)
                 hidGamepad.sendReport()
             }
 
+            KeyEvent.KEYCODE_MENU -> {
+                popupDialog("按下了MENU", "RT")
+            }
+
             KeyEvent.KEYCODE_BACK -> {
-                finish()
+                if (press)
+                    finish()
             }
 
             else -> return false
