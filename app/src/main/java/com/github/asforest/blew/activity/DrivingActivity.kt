@@ -14,7 +14,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.view.KeyEvent
-import android.view.Menu
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
@@ -22,11 +21,16 @@ import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.github.asforest.blew.R
 import com.github.asforest.blew.ble.impl.HIDGamepad
 import com.github.asforest.blew.event.Event
+import com.github.asforest.blew.util.AndroidUtils.popupAdvPragmaDialog
 import com.github.asforest.blew.util.AndroidUtils.popupDialog
+import com.github.asforest.blew.util.AndroidUtils.popupInputDialog
 import com.github.asforest.blew.util.FileObj
+import kotlinx.coroutines.launch
 import org.joml.Math
 import org.joml.Matrix4f
 import org.joml.Quaternionf
@@ -39,6 +43,7 @@ import kotlin.math.max
 
 class DrivingActivity : AppCompatActivity(), SensorEventListener
 {
+    object viewModel : ViewModel()
     val handler: Handler by lazy { Handler(mainLooper) }
     val sensorManager: SensorManager by lazy { getSystemService(SENSOR_SERVICE) as SensorManager }
     val rotationSensor: Sensor by lazy { sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) }
@@ -79,6 +84,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         findViewById(R.id.gamepad_button_27),
     ) }
 
+    var editingMode = false
     var steeringHalfConstraint: Int = 270
     var acceleratorHalfConstraint: Int = 45
     var reportPeriodMs: Int = 50
@@ -123,16 +129,28 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         for ((index, button) in functionalButtons.withIndex())
         {
             button.setOnTouchListener { _, event ->
-                if (event.action == MotionEvent.ACTION_DOWN)
+                if (!editingMode)
                 {
-                    hidGamepad.press((index + 1).toUByte())
-                    hidGamepad.sendReport()
-                }
+                    if (event.action == MotionEvent.ACTION_DOWN)
+                    {
+                        hidGamepad.press((index + 1).toUByte())
+                        hidGamepad.sendReport()
+                    }
 
-                if (event.action == MotionEvent.ACTION_UP)
-                {
-                    hidGamepad.release((index + 1).toUByte())
-                    hidGamepad.sendReport()
+                    if (event.action == MotionEvent.ACTION_UP)
+                    {
+                        hidGamepad.release((index + 1).toUByte())
+                        hidGamepad.sendReport()
+                    }
+                } else {
+                    if (event.action == MotionEvent.ACTION_DOWN)
+                    {
+                        viewModel.viewModelScope.launch {
+                            val newText = popupInputDialog("编辑按钮${index}上的文字", button.text.toString())
+                            button.text = newText
+                            saveConfig()
+                        }
+                    }
                 }
 
                 true
@@ -144,23 +162,44 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
             HIDGamepad.BUTTON_126 to referenceRotationText))
         {
             widget.setOnTouchListener { _, event ->
-                if (event.action == MotionEvent.ACTION_DOWN)
+                if (!editingMode)
                 {
-                    hidGamepad.press(button)
-                    hidGamepad.sendReport()
-                }
+                    if (event.action == MotionEvent.ACTION_DOWN)
+                    {
+                        hidGamepad.press(button)
+                        hidGamepad.sendReport()
+                    }
 
-                if (event.action == MotionEvent.ACTION_UP)
-                {
-                    hidGamepad.release(button)
-                    hidGamepad.sendReport()
+                    if (event.action == MotionEvent.ACTION_UP)
+                    {
+                        hidGamepad.release(button)
+                        hidGamepad.sendReport()
+                    }
+                } else {
+                    if (event.action == MotionEvent.ACTION_DOWN)
+                    {
+                       viewModel.viewModelScope.launch {
+                           val newPragma = popupAdvPragmaDialog(steeringHalfConstraint, acceleratorHalfConstraint, reportPeriodMs)
+                           val steeringConstraint = Math.clamp(15, 1000, newPragma[0] ?: steeringHalfConstraint)
+                           val acceleratorConstraint = Math.clamp(5, 180, newPragma[1] ?: acceleratorHalfConstraint)
+                           val reportPeriod = Math.clamp(30, 5000, newPragma[2] ?: reportPeriodMs)
+
+                           steeringHalfConstraint = steeringConstraint
+                           acceleratorHalfConstraint = acceleratorConstraint
+                           reportPeriodMs = reportPeriod
+
+                           saveConfig()
+
+                           popupDialog("高级参数已更新", "已即时生效")
+                       }
+                    }
                 }
 
                 true
             }
         }
 
-        updateConfigurationFile()
+        loadConfig()
 
         // 定时报告数据
         repeatedlyRun(reportPeriodMs.toLong()) { reportSensorData() }
@@ -188,11 +227,8 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
     {
         super.onWindowFocusChanged(hasFocus)
 
-        if (hasFocus)
-            window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or
-                    View.SYSTEM_UI_FLAG_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        if (hasFocus && !editingMode)
+            enterFullscreen()
     }
 
     override fun onDestroy()
@@ -200,6 +236,22 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         super.onDestroy()
         sensorManager.unregisterListener(this)
         unregisterReceiver(batteryLevelChangeReceiver)
+    }
+
+    fun enterFullscreen()
+    {
+        window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or
+                View.SYSTEM_UI_FLAG_FULLSCREEN or
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+    }
+
+    fun exitFullscreen()
+    {
+        window.decorView.systemUiVisibility = window.decorView.systemUiVisibility and (
+                View.SYSTEM_UI_FLAG_FULLSCREEN or
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY).inv()
     }
 
     var accumulatedSteeringAngle: Float = 0f // 方向盘当前累计旋转角度（可能超过360）
@@ -321,7 +373,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         brake_bar.progress = max(0, min(100, 100 - ab))
     }
 
-    fun updateConfigurationFile()
+    fun loadConfig()
     {
         val configFile = FileObj("/sdcard/blew.json")
 
@@ -348,6 +400,21 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         steeringHalfConstraint = root.optInt("steering_half_constraint", 270)
         acceleratorHalfConstraint = root.optInt("accelerator_half_constraint", 45)
         reportPeriodMs = root.optInt("report_period", 50)
+    }
+
+    fun saveConfig()
+    {
+        val configFile = FileObj("/sdcard/blew.json")
+
+        val root = JSONObject()
+        root.put("steering_half_constraint", steeringHalfConstraint)
+        root.put("accelerator_half_constraint", acceleratorHalfConstraint)
+        root.put("report_period", reportPeriodMs)
+
+        for ((index, button) in functionalButtons.withIndex())
+            root.put("b${index + 1}", button.text)
+
+        configFile.content = root.toString(4)
     }
 
     fun queryBatteryLevel(): Int
@@ -409,7 +476,15 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
             }
 
             KeyEvent.KEYCODE_MENU -> {
-                popupDialog("按下了MENU", "RT")
+                if (press)
+                {
+                    editingMode = !editingMode
+                    if (editingMode)
+                        exitFullscreen()
+                    else
+                        enterFullscreen()
+                    popupDialog("模式已切换", "已经切换到" + if (editingMode) "编辑模式" else "正常模式")
+                }
             }
 
             KeyEvent.KEYCODE_BACK -> {
