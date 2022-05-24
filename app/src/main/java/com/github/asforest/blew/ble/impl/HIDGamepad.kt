@@ -530,7 +530,7 @@ class HIDGamepad(
         _slider2 = bound(_slider2)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setSimulationControls(rudder: Short, throttle: Short, accelerator: Short, brake: Short, steering: Short)
@@ -542,7 +542,7 @@ class HIDGamepad(
         _steering = bound(steering)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setHats(hat1: Byte, hat2: Byte, hat3: Byte, hat4: Byte)
@@ -553,7 +553,7 @@ class HIDGamepad(
         _hat4 = hat4.toShort()
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setSliders(slider1: Short, slider2: Short) {
@@ -561,10 +561,10 @@ class HIDGamepad(
         _slider2 = bound(slider2)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
-    fun sendReport()
+    fun sendReport(confirm: Boolean)
     {
         if (bleGattServerService.currentDevice == null)
             return
@@ -659,7 +659,7 @@ class HIDGamepad(
         }
 
         inputGamepad.value = m
-        gattServer.notifyCharacteristicChanged(bleGattServerService.currentDevice, inputGamepad, false)
+        gattServer.notifyCharacteristicChanged(bleGattServerService.currentDevice, inputGamepad, confirm)
     }
 
     fun press(button: UByte)
@@ -689,7 +689,7 @@ class HIDGamepad(
             _buttons[index] = result
 
         if (config.autoReport)
-            sendReport()
+            sendReport(true)
     }
 
     fun specialButtonBitPosition(button: UByte): UByte
@@ -723,7 +723,7 @@ class HIDGamepad(
             _specialButtons = result
 
         if (config.autoReport)
-            sendReport()
+            sendReport(true)
     }
 
     fun pressSpecialButton(button: UByte) { setSpecialButton(button, true) }
@@ -767,7 +767,7 @@ class HIDGamepad(
         _y = bound(y)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setRightThumb(z: Short, rZ: Short) {
@@ -775,21 +775,21 @@ class HIDGamepad(
         _rZ = bound(rZ)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setLeftTrigger(rX: Short) {
         _rX = bound(rX)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setRightTrigger(rY: Short) {
         _rY = bound(rY)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setTriggers(rX: Short, rY: Short) {
@@ -797,98 +797,98 @@ class HIDGamepad(
         _rY = bound(rY)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setHat(hat: Byte) {
         _hat1 = hat.toShort()
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setHat1(hat1: Byte) {
         _hat1 = hat1.toShort()
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setHat2(hat2: Byte) {
         _hat2 = hat2.toShort()
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setHat3(hat3: Byte) {
         _hat3 = hat3.toShort()
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setHat4(hat4: Byte) {
         _hat4 = hat4.toShort()
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setX(x: Short) {
         _x = bound(x)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setY(y: Short) {
         _y = bound(y)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setZ(z: Short) {
         _z = bound(z)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setRZ(rZ: Short) {
         _rZ = bound(rZ)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setRX(rX: Short) {
         _rX = bound(rX)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setRY(rY: Short) {
         _rY = bound(rY)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setSlider(slider: Short) {
         _slider1 = bound(slider)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setSlider1(slider1: Short) {
         _slider1 = bound(slider1)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setSlider2(slider2: Short) {
@@ -896,42 +896,42 @@ class HIDGamepad(
         _slider2 = bound(slider2)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setRudder(rudder: Short) {
         _rudder = bound(rudder)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setThrottle(throttle: Short) {
         _throttle = bound(throttle)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setAccelerator(accelerator: Short) {
         _accelerator = bound(accelerator)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setBrake(brake: Short) {
         _brake = bound(brake)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun setSteering(steering: Short) {
         _steering = bound(steering)
 
         if (config.autoReport)
-            sendReport()
+            sendReport(false)
     }
 
     fun isPressed(button: UByte): Boolean

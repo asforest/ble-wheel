@@ -158,13 +158,13 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
                     if (event.action == MotionEvent.ACTION_DOWN)
                     {
                         hidGamepad?.press((index + 1).toUByte())
-                        hidGamepad?.sendReport()
+                        hidGamepad?.sendReport(true)
                     }
 
                     if (event.action == MotionEvent.ACTION_UP)
                     {
                         hidGamepad?.release((index + 1).toUByte())
-                        hidGamepad?.sendReport()
+                        hidGamepad?.sendReport(true)
                     }
                 } else {
                     if (event.action == MotionEvent.ACTION_DOWN)
@@ -191,13 +191,13 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
                     if (event.action == MotionEvent.ACTION_DOWN)
                     {
                         hidGamepad?.press(button)
-                        hidGamepad?.sendReport()
+                        hidGamepad?.sendReport(true)
                     }
 
                     if (event.action == MotionEvent.ACTION_UP)
                     {
                         hidGamepad?.release(button)
-                        hidGamepad?.sendReport()
+                        hidGamepad?.sendReport(true)
                     }
                 } else {
                     if (event.action == MotionEvent.ACTION_DOWN)
@@ -324,7 +324,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         fun reportOnce()
         {
             if (!reported)
-                hidGamepad?.sendReport()
+                hidGamepad?.sendReport(false)
             reported = true
         }
 
@@ -503,7 +503,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
                         hidGamepad?.press(HIDGamepad.BUTTON_127)
                     else
                         hidGamepad?.release(HIDGamepad.BUTTON_127)
-                    hidGamepad?.sendReport()
+                    hidGamepad?.sendReport(true)
                 }
             }
 
@@ -517,7 +517,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
                         hidGamepad?.press(HIDGamepad.BUTTON_128)
                     else
                         hidGamepad?.release(HIDGamepad.BUTTON_128)
-                    hidGamepad?.sendReport()
+                    hidGamepad?.sendReport(true)
                 }
             }
 
