@@ -1,7 +1,11 @@
 package com.github.asforest.blew.activity
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
@@ -16,11 +20,14 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity()
 {
     object viewModel : ViewModel()
+    val notificationManager by lazy { getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        createNotificationChannel()
 
         // 请求外部存储读写权限
         viewModel.viewModelScope.launch {
@@ -33,12 +40,23 @@ class MainActivity : AppCompatActivity()
             } else {
                 if (!BLEGattServerService.isRunning)
                 {
-                    startService(Intent(this@MainActivity, BLEGattServerService::class.java))
+                    startForegroundService(Intent(this@MainActivity, BLEGattServerService::class.java))
                     toast("BLE 广播正在启动...（在通知栏查看）")
                 }
 
                 finish()
             }
         }
+    }
+
+    private fun createNotificationChannel()
+    {
+        val id = getString(R.string.notification_channel_name)
+        val name = "BLE广播服务"
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val channel = NotificationChannel(id, name, importance)
+        channel.description = "BLE GATT Server的广播服务"
+
+        notificationManager.createNotificationChannel(channel)
     }
 }

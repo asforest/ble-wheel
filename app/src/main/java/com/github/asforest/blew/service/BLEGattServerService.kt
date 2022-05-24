@@ -1,6 +1,6 @@
 package com.github.asforest.blew.service
 
-import android.app.NotificationChannel
+import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
@@ -22,11 +22,13 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.IBinder
 import android.os.ParcelUuid
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.github.asforest.blew.BuildConfig
 import com.github.asforest.blew.R
 import com.github.asforest.blew.activity.DrivingActivity
 import com.github.asforest.blew.ble.BLE
@@ -47,6 +49,7 @@ class BLEGattServerService : Service()
     var onlineDevices: MutableMap<String, BluetoothDevice> = mutableMapOf()
     var currentDevice: BluetoothDevice? = null
 
+    var state = ServiceState.Starting
     val ntfActionReceiver by lazy { NotificationActionReceiver(this) }
     val hidGamepad by lazy { setupHIDGamepad() }
 
@@ -67,6 +70,8 @@ class BLEGattServerService : Service()
     {
         isRunning = true
 
+        startForeground(NOTIFICATION_ID, buildNotification())
+
         try {
 
         } catch (e: Exception) {
@@ -79,7 +84,6 @@ class BLEGattServerService : Service()
 
         // 注册通知相关
         registerReceiver(ntfActionReceiver, IntentFilter(ntfActionReceiver.ACTION))
-        createNotificationChannel()
 
         // 设置游戏控制器
         hidGamepad.setAccelerator(0)
@@ -97,6 +101,7 @@ class BLEGattServerService : Service()
             {
                 onError("BLE广播启动失败", "error code: $it")
             } else {
+                state = ServiceState.Started
                 showOrUpdateMainNotification()
             }
         }
@@ -118,6 +123,7 @@ class BLEGattServerService : Service()
         close()
 
         toast("BLE GATT Server 已经退出")
+        Log.i("App", "BLE GATT Server 服务已经退出")
     }
 
     fun setupHIDGamepad(): HIDGamepad
@@ -135,28 +141,43 @@ class BLEGattServerService : Service()
 
     fun showOrUpdateMainNotification()
     {
+        notificationManager.notify(NOTIFICATION_ID, buildNotification())
+    }
+
+    fun buildNotification(): Notification
+    {
         val stopButton = NotificationCompat.Action(
             R.drawable.ic_launcher_background, "停止",
-            PendingIntent.getBroadcast(this, 2,
+            PendingIntent.getBroadcast(
+                this, 2,
                 Intent(ntfActionReceiver.ACTION)
-                    .putExtra("button_index", ntfActionReceiver.BUTTON_STOP)
-            , 0)
+                    .putExtra("button_index", ntfActionReceiver.BUTTON_STOP), 0
+            )
         )
 
         val drivingButton = NotificationCompat.Action(
             R.drawable.ic_launcher_background, "界面",
-            PendingIntent.getBroadcast(this, 3,
+            PendingIntent.getBroadcast(
+                this, 3,
                 Intent(ntfActionReceiver.ACTION)
-                    .putExtra("button_index", ntfActionReceiver.BUTTON_DRIVING)
-            , 0)
+                    .putExtra("button_index", ntfActionReceiver.BUTTON_DRIVING), 0
+            )
         )
 
-        val contentText = if (currentDevice == null)
-            "BLE GATT Server 广播已启动"
-        else
-            "${currentDevice!!.name}(${currentDevice!!.address}) 已连接"
+        val contentText = when (state) {
+            ServiceState.Starting -> {
+                "服务正在启动"
+            }
 
-        val ntf = NotificationCompat.Builder(this, getString(R.string.notification_channel_name))
+            ServiceState.Started -> {
+                if (currentDevice == null)
+                    "广播已启动"
+                else
+                    "${currentDevice!!.name}(${currentDevice!!.address}) 已连接"
+            }
+        }
+
+        return NotificationCompat.Builder(this, getString(R.string.notification_channel_name))
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle("BLE GATT Server Advertising Service")
             .setContentText(contentText)
@@ -166,13 +187,11 @@ class BLEGattServerService : Service()
             .addAction(stopButton)
             .addAction(drivingButton)
             .build()
-
-        notificationManager.notify(123123, ntf)
     }
 
     fun removeMainNotification()
     {
-        notificationManager.cancel(123123)
+        notificationManager.cancel(NOTIFICATION_ID)
     }
 
     fun onError(title: String, message: String)
@@ -189,47 +208,13 @@ class BLEGattServerService : Service()
         notificationManager.notify(Random.nextInt(), ntf)
     }
 
-    class NotificationActionReceiver(val service: BLEGattServerService) : BroadcastReceiver()
-    {
-        val ACTION = service.packageName + ".NotificationAction"
-
-        val BUTTON_STOP = 2
-        val BUTTON_DRIVING = 3
-
-        override fun onReceive(context: Context, intent: Intent)
-        {
-            when (intent.getIntExtra("button_index", -1))
-            {
-                BUTTON_STOP -> {
-                    service.stopAdvertising()
-                    service.stopSelf()
-                }
-
-                BUTTON_DRIVING -> {
-                    service.startActivity(Intent(service, DrivingActivity::class.java))
-                }
-            }
-        }
-    }
-
-    private fun createNotificationChannel()
-    {
-        val id = getString(R.string.notification_channel_name)
-        val name = "BLE广播服务"
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val channel = NotificationChannel(id, name, importance)
-        channel.description = "BLE GATT Server的广播服务"
-
-        notificationManager.createNotificationChannel(channel)
-    }
-
     private fun startAdvertising()
     {
         val settings = AdvertiseSettings.Builder()
-            .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
+            .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_ULTRA_LOW)
             .setConnectable(true)
             .setTimeout(0)
-            .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
+            .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_POWER)
             .build()
 
         val data = AdvertiseData.Builder()
@@ -257,6 +242,33 @@ class BLEGattServerService : Service()
 
     companion object {
         var isRunning = false
+
+        const val NOTIFICATION_ID = 123123
+    }
+
+    enum class ServiceState { Starting, Started }
+
+    class NotificationActionReceiver(val service: BLEGattServerService) : BroadcastReceiver()
+    {
+        val ACTION = service.packageName + ".NotificationAction"
+
+        val BUTTON_STOP = 2
+        val BUTTON_DRIVING = 3
+
+        override fun onReceive(context: Context, intent: Intent)
+        {
+            when (intent.getIntExtra("button_index", -1))
+            {
+                BUTTON_STOP -> {
+                    service.stopAdvertising()
+                    service.stopSelf()
+                }
+
+                BUTTON_DRIVING -> {
+                    service.startActivity(Intent(service, DrivingActivity::class.java))
+                }
+            }
+        }
     }
 
     data class ServiceBinder(val service: BLEGattServerService) : Binder()

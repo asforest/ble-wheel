@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:allowBackup="true"
@@ -27,7 +28,8 @@
         <activity android:name=".activity.DrivingActivity"
             android:screenOrientation="landscape" />
 
-        <service android:name=".service.BLEGattServerService" />
+        <service android:name=".service.BLEGattServerService"
+            android:foregroundServiceType="connectedDevice"/>
     </application>
 
 </manifest>
