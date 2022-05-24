@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity()
                 if (!BLEGattServerService.isRunning)
                 {
                     startService(Intent(this@MainActivity, BLEGattServerService::class.java))
-                    toast("BLE 广播正在启动...")
+                    toast("BLE 广播正在启动...（在通知栏查看）")
                 }
 
                 finish()

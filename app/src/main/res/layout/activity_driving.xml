@@ -105,7 +105,7 @@
         android:id="@+id/center_panel"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="#E1E1E1"
+        android:background="#3A3A3A"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -127,7 +127,7 @@
         <Button
             android:id="@+id/gamepad_button_1"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -135,7 +135,7 @@
         <Button
             android:id="@+id/gamepad_button_2"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button2"
             app:layout_constraintEnd_toStartOf="@+id/gamepad_button_3"
             app:layout_constraintStart_toEndOf="@+id/gamepad_button_1"
@@ -144,7 +144,7 @@
         <Button
             android:id="@+id/gamepad_button_3"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button3"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -153,7 +153,7 @@
         <Button
             android:id="@+id/gamepad_button_4"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button4"
             app:layout_constraintEnd_toStartOf="@+id/gamepad_button_5"
             app:layout_constraintStart_toEndOf="@+id/gamepad_button_3" />
@@ -161,7 +161,7 @@
         <Button
             android:id="@+id/gamepad_button_5"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button5"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -169,7 +169,7 @@
         <Button
             android:id="@+id/gamepad_button_6"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button6"
             app:layout_constraintBottom_toTopOf="@+id/gamepad_button_11"
             app:layout_constraintStart_toStartOf="parent"
@@ -178,7 +178,7 @@
         <Button
             android:id="@+id/gamepad_button_7"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button7"
             app:layout_constraintBottom_toTopOf="@+id/gamepad_button_12"
             app:layout_constraintEnd_toStartOf="@+id/gamepad_button_8"
@@ -188,7 +188,7 @@
         <Button
             android:id="@+id/gamepad_button_8"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button8"
             app:layout_constraintBottom_toTopOf="@+id/button_center"
             app:layout_constraintEnd_toEndOf="parent"
@@ -198,7 +198,7 @@
         <Button
             android:id="@+id/gamepad_button_9"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button9"
             app:layout_constraintBottom_toTopOf="@+id/gamepad_button_13"
             app:layout_constraintEnd_toStartOf="@+id/gamepad_button_10"
@@ -208,7 +208,7 @@
         <Button
             android:id="@+id/gamepad_button_10"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button10"
             app:layout_constraintBottom_toTopOf="@+id/gamepad_button_14"
             app:layout_constraintEnd_toEndOf="parent"
@@ -217,7 +217,7 @@
         <Button
             android:id="@+id/gamepad_button_11"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button11"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -226,7 +226,7 @@
         <Button
             android:id="@+id/gamepad_button_12"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button12"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/button_center"
@@ -236,7 +236,7 @@
         <Button
             android:id="@+id/gamepad_button_13"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button13"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/gamepad_button_14"
@@ -246,7 +246,7 @@
         <Button
             android:id="@+id/gamepad_button_14"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button14"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -255,7 +255,7 @@
         <Button
             android:id="@+id/gamepad_button_15"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button15"
             app:layout_constraintBottom_toTopOf="@+id/gamepad_button_20"
             app:layout_constraintStart_toStartOf="parent"
@@ -264,7 +264,7 @@
         <Button
             android:id="@+id/gamepad_button_16"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button16"
             app:layout_constraintBottom_toTopOf="@+id/gamepad_button_21"
             app:layout_constraintEnd_toStartOf="@+id/gamepad_button_17"
@@ -274,7 +274,7 @@
         <Button
             android:id="@+id/gamepad_button_17"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button17"
             app:layout_constraintBottom_toTopOf="@+id/gamepad_button_22"
             app:layout_constraintEnd_toEndOf="parent"
@@ -284,7 +284,7 @@
         <Button
             android:id="@+id/gamepad_button_18"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button18"
             app:layout_constraintBottom_toTopOf="@+id/gamepad_button_23"
             app:layout_constraintEnd_toStartOf="@+id/gamepad_button_19"
@@ -294,7 +294,7 @@
         <Button
             android:id="@+id/gamepad_button_19"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button19"
             app:layout_constraintBottom_toTopOf="@+id/gamepad_button_24"
             app:layout_constraintEnd_toEndOf="parent"
@@ -303,7 +303,7 @@
         <Button
             android:id="@+id/gamepad_button_20"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button20"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
@@ -311,7 +311,7 @@
         <Button
             android:id="@+id/gamepad_button_21"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button21"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/gamepad_button_22"
@@ -320,7 +320,7 @@
         <Button
             android:id="@+id/gamepad_button_22"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button22"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -329,7 +329,7 @@
         <Button
             android:id="@+id/gamepad_button_23"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button23"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/gamepad_button_24"
@@ -338,7 +338,7 @@
         <Button
             android:id="@+id/gamepad_button_24"
             android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="Button24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
