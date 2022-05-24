@@ -24,10 +24,10 @@ class MainActivity : AppCompatActivity()
 
         // 请求外部存储读写权限
         viewModel.viewModelScope.launch {
-            val isGranted = requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            if (!isGranted)
+            val isGranted = requestPermission(listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE))
+            if (isGranted.isNotEmpty())
             {
-                popupDialog("没有权限", "请授权外部存储设备的读写权限！") {
+                popupDialog("没有权限", "请授权外部存储设备的读、写权限！") {
                     finish()
                 }
             } else {

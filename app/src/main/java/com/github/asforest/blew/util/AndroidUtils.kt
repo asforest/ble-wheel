@@ -1,14 +1,17 @@
 package com.github.asforest.blew.util
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.pm.PackageManager
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import com.github.asforest.blew.R
-import com.tbruyelle.rxpermissions3.RxPermissions
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -20,28 +23,28 @@ object AndroidUtils
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
-    suspend fun FragmentActivity.requestPermission(permission: String): Boolean
+    /**
+     * 申请权限
+     * @param permissions 要申请的权限
+     * @return 未能申请到的权限们。如果全部申请成功，返回一个空列表
+     */
+    suspend fun FragmentActivity.requestPermission(permissions: List<String>): List<String>
     {
-        var continuation: Continuation<Boolean>? = null
+        var continuation: Continuation<List<String>>? = null
 
-        val rxPermissions = RxPermissions(this)
+        val notAcquired = permissions.filter { ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED }
 
-        if (rxPermissions.isGranted(permission))
-            return true
+        if (notAcquired.isEmpty())
+            return listOf()
 
-        rxPermissions.request(permission).subscribe { granted -> continuation?.resume(granted) }
+        val denied = permissions.filter { shouldShowRequestPermissionRationale(it) }
 
-//        if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED)
-//        {
-//            continuation?.resume(true)
-//        } else if (shouldShowRequestPermissionRationale(permission)) {
-//            toast("拒绝了权限申请")
-//        } else {
-//            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-//                continuation?.resume(isGranted)
-//                println("#######################################################################################")
-//            }.launch(permission)
-//        }
+        if (denied.isNotEmpty())
+            return denied
+
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { isGranted ->
+            continuation!!.resume(isGranted.filter { !it.value }.map { it.key })
+        }.launch(permissions.toTypedArray())
 
         return suspendCoroutine {
             val isReIn = continuation != null
