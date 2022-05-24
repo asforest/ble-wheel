@@ -467,6 +467,16 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         }
     }
 
+    fun switchEditingMode()
+    {
+        editingMode = !editingMode
+        if (editingMode)
+            exitFullscreen()
+        else
+            enterFullscreen()
+        popupDialog("模式已切换", "已经切换到" + if (editingMode) "编辑模式" else "正常模式")
+    }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean = onKeyEvent(keyCode, true)
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean = onKeyEvent(keyCode, false)
@@ -484,31 +494,36 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         when (keyCode)
         {
             KeyEvent.KEYCODE_VOLUME_UP -> {
-                if (press)
-                    hidGamepad?.press(HIDGamepad.BUTTON_127)
-                else
-                    hidGamepad?.release(HIDGamepad.BUTTON_127)
-                hidGamepad?.sendReport()
+                // 进入设置模式
+                if (press && KeyEvent.KEYCODE_VOLUME_DOWN in pressedKeys)
+                {
+                    switchEditingMode()
+                } else {
+                    if (press)
+                        hidGamepad?.press(HIDGamepad.BUTTON_127)
+                    else
+                        hidGamepad?.release(HIDGamepad.BUTTON_127)
+                    hidGamepad?.sendReport()
+                }
             }
 
             KeyEvent.KEYCODE_VOLUME_DOWN -> {
-                if (press)
-                    hidGamepad?.press(HIDGamepad.BUTTON_128)
-                else
-                    hidGamepad?.release(HIDGamepad.BUTTON_128)
-                hidGamepad?.sendReport()
+                // 进入设置模式
+                if (press && KeyEvent.KEYCODE_VOLUME_UP in pressedKeys)
+                {
+                    switchEditingMode()
+                } else {
+                    if (press)
+                        hidGamepad?.press(HIDGamepad.BUTTON_128)
+                    else
+                        hidGamepad?.release(HIDGamepad.BUTTON_128)
+                    hidGamepad?.sendReport()
+                }
             }
 
             KeyEvent.KEYCODE_MENU -> {
                 if (press)
-                {
-                    editingMode = !editingMode
-                    if (editingMode)
-                        exitFullscreen()
-                    else
-                        enterFullscreen()
-                    popupDialog("模式已切换", "已经切换到" + if (editingMode) "编辑模式" else "正常模式")
-                }
+                    switchEditingMode()
             }
 
             KeyEvent.KEYCODE_BACK -> {
