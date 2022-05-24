@@ -240,6 +240,8 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         // 首次报告电量 + 定时刷新电量
         registerReceiver(batteryLevelChangeReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         onBatteryLevelChangeEvent.always { hidGamepad?.hid?.setBatteryLevel(max(0, min(100, it)).toByte()) }
+
+        toast("同时按音量键+-切换编辑模式\n也可以按菜单键切换")
     }
 
 //    override fun onMenuOpened(featureId: Int, menu: Menu): Boolean

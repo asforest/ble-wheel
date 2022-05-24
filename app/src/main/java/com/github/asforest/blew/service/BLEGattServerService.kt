@@ -147,7 +147,7 @@ class BLEGattServerService : Service()
     fun buildNotification(): Notification
     {
         val stopButton = NotificationCompat.Action(
-            R.drawable.ic_launcher_background, "停止",
+            R.mipmap.ic_launcher, "退出运行",
             PendingIntent.getBroadcast(
                 this, 2,
                 Intent(ntfActionReceiver.ACTION)
@@ -156,7 +156,7 @@ class BLEGattServerService : Service()
         )
 
         val drivingButton = NotificationCompat.Action(
-            R.drawable.ic_launcher_background, "界面",
+            R.mipmap.ic_launcher, "打开界面",
             PendingIntent.getBroadcast(
                 this, 3,
                 Intent(ntfActionReceiver.ACTION)
@@ -171,14 +171,14 @@ class BLEGattServerService : Service()
 
             ServiceState.Started -> {
                 if (currentDevice == null)
-                    "广播已启动"
+                    "广播已启动，等待设备连接"
                 else
                     "${currentDevice!!.name}(${currentDevice!!.address}) 已连接"
             }
         }
 
         return NotificationCompat.Builder(this, getString(R.string.notification_channel_name))
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.mipmap.steering_wheel)
             .setContentTitle("BLE GATT Server Advertising Service")
             .setContentText(contentText)
             .setOngoing(true)
@@ -197,7 +197,7 @@ class BLEGattServerService : Service()
     fun onError(title: String, message: String)
     {
         val ntf = NotificationCompat.Builder(this, getString(R.string.notification_channel_name))
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.mipmap.steering_wheel)
             .setContentTitle(title)
             .setContentText(message)
             .setStyle(NotificationCompat.BigTextStyle())

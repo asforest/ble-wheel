@@ -15,6 +15,7 @@ import com.github.asforest.blew.service.BLEGattServerService
 import com.github.asforest.blew.util.AndroidUtils.popupDialog
 import com.github.asforest.blew.util.AndroidUtils.requestPermission
 import com.github.asforest.blew.util.AndroidUtils.toast
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity()
@@ -41,9 +42,12 @@ class MainActivity : AppCompatActivity()
                 if (!BLEGattServerService.isRunning)
                 {
                     startForegroundService(Intent(this@MainActivity, BLEGattServerService::class.java))
-                    toast("BLE 广播正在启动...（在通知栏查看）")
+                    toast("BLE广播正在启动\n（在通知栏查看）")
+                } else {
+                    toast("BLE广播服务已经启动了\n（在通知栏查看）")
                 }
 
+                delay(1500)
                 finish()
             }
         }
