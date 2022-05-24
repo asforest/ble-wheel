@@ -1,6 +1,7 @@
 package com.github.asforest.blew.ble
 
 import android.bluetooth.*
+import com.github.asforest.blew.service.BLEGattServerService
 import kotlinx.coroutines.runBlocking
 import java.util.*
 import kotlin.coroutines.Continuation
@@ -11,7 +12,7 @@ import kotlin.math.min
 
 class BLEHIDDevices(
     val gattServer: BluetoothGattServer,
-    val hidPeripheral: HIDPeripheral,
+    val bleGattServerService: BLEGattServerService,
 ) {
     val PT_READ = BluetoothGattCharacteristic.PROPERTY_READ
     val PT_WRITE = BluetoothGattCharacteristic.PROPERTY_WRITE
@@ -78,7 +79,7 @@ class BLEHIDDevices(
     {
         var continuation: Continuation<Unit>? = null
 
-        hidPeripheral.onServiceAddEvent.once { continuation?.resume(Unit) }
+        bleGattServerService.onServiceAddEvent.once { continuation?.resume(Unit) }
         gattServer.addService(service)
 
         return suspendCoroutine {
@@ -198,8 +199,8 @@ class BLEHIDDevices(
     fun setBatteryLevel(level: Byte)
     {
         batteryLevelCharacteristic.value = byteArrayOf(max(0, min(100, level.toInt())).toByte())
-        if (hidPeripheral.currentDevice != null)
-            gattServer.notifyCharacteristicChanged(hidPeripheral.currentDevice, batteryLevelCharacteristic, true)
+        if (bleGattServerService.currentDevice != null)
+            gattServer.notifyCharacteristicChanged(bleGattServerService.currentDevice, batteryLevelCharacteristic, true)
     }
 
     private fun BluetoothGattService.createCharacteristic(uuid: UUID, properties: Int, permissions: Int): BluetoothGattCharacteristic

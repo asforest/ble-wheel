@@ -25,6 +25,10 @@ object AndroidUtils
         var continuation: Continuation<Boolean>? = null
 
         val rxPermissions = RxPermissions(this)
+
+        if (rxPermissions.isGranted(permission))
+            return true
+
         rxPermissions.request(permission).subscribe { granted -> continuation?.resume(granted) }
 
 //        if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED)

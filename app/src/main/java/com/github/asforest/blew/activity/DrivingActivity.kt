@@ -2,9 +2,11 @@ package com.github.asforest.blew.activity
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.ServiceConnection
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -12,7 +14,7 @@ import android.hardware.SensorManager
 import android.os.BatteryManager
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
+import android.os.IBinder
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -26,9 +28,11 @@ import androidx.lifecycle.viewModelScope
 import com.github.asforest.blew.R
 import com.github.asforest.blew.ble.impl.HIDGamepad
 import com.github.asforest.blew.event.Event
+import com.github.asforest.blew.service.BLEGattServerService
 import com.github.asforest.blew.util.AndroidUtils.popupAdvPragmaDialog
 import com.github.asforest.blew.util.AndroidUtils.popupDialog
 import com.github.asforest.blew.util.AndroidUtils.popupInputDialog
+import com.github.asforest.blew.util.AndroidUtils.toast
 import com.github.asforest.blew.util.FileObj
 import kotlinx.coroutines.launch
 import org.joml.Math
@@ -93,7 +97,8 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
     var currentRotation: Matrix4f? = null
     var referenceRotation: Matrix4f? = null
 
-    val hidGamepad: HIDGamepad get() = MainActivity._gamepad!!
+    var bleService: BLEGattServerService? = null
+    val hidGamepad: HIDGamepad? get() = bleService?.hidGamepad
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?)
@@ -101,6 +106,25 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driving)
 
+        // 绑定服务
+        val isBound = bindService(Intent(this, BLEGattServerService::class.java), object : ServiceConnection {
+            override fun onServiceConnected(name: ComponentName, service: IBinder) {
+                bleService = (service as BLEGattServerService.ServiceBinder).service
+            }
+            override fun onServiceDisconnected(name: ComponentName) {
+                bleService = null
+                toast("BLE GATT 服务已停止")
+                finish()
+            }
+        }, Context.BIND_IMPORTANT)
+
+        if(!isBound)
+        {
+            popupDialog("服务绑定失败", "服务绑定失败，点击退出") { finish() }
+            return
+        }
+
+        // 注册传感器事件
         sensorManager.registerListener(this, rotationSensor, SensorManager.SENSOR_DELAY_GAME)
 
         // 监听按钮点击
@@ -133,14 +157,14 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
                 {
                     if (event.action == MotionEvent.ACTION_DOWN)
                     {
-                        hidGamepad.press((index + 1).toUByte())
-                        hidGamepad.sendReport()
+                        hidGamepad?.press((index + 1).toUByte())
+                        hidGamepad?.sendReport()
                     }
 
                     if (event.action == MotionEvent.ACTION_UP)
                     {
-                        hidGamepad.release((index + 1).toUByte())
-                        hidGamepad.sendReport()
+                        hidGamepad?.release((index + 1).toUByte())
+                        hidGamepad?.sendReport()
                     }
                 } else {
                     if (event.action == MotionEvent.ACTION_DOWN)
@@ -166,14 +190,14 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
                 {
                     if (event.action == MotionEvent.ACTION_DOWN)
                     {
-                        hidGamepad.press(button)
-                        hidGamepad.sendReport()
+                        hidGamepad?.press(button)
+                        hidGamepad?.sendReport()
                     }
 
                     if (event.action == MotionEvent.ACTION_UP)
                     {
-                        hidGamepad.release(button)
-                        hidGamepad.sendReport()
+                        hidGamepad?.release(button)
+                        hidGamepad?.sendReport()
                     }
                 } else {
                     if (event.action == MotionEvent.ACTION_DOWN)
@@ -205,17 +229,17 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         repeatedlyRun(reportPeriodMs.toLong()) { reportSensorData() }
 
         // 处理设备断开事件
-        hidGamepad.onDeviceConnectionStateChangeEvent.once {
-            if (!it)
-                finish()
-        }
+//        hidGamepad.onDeviceConnectionStateChangeEvent.once {
+//            if (!it)
+//                finish()
+//        }
 
         // 保持屏幕开启
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         // 首次报告电量 + 定时刷新电量
         registerReceiver(batteryLevelChangeReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        onBatteryLevelChangeEvent.always { hidGamepad.hid.setBatteryLevel(max(0, min(100, it)).toByte()) }
+        onBatteryLevelChangeEvent.always { hidGamepad?.hid?.setBatteryLevel(max(0, min(100, it)).toByte()) }
     }
 
 //    override fun onMenuOpened(featureId: Int, menu: Menu): Boolean
@@ -300,7 +324,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         fun reportOnce()
         {
             if (!reported)
-                hidGamepad.sendReport()
+                hidGamepad?.sendReport()
             reported = true
         }
 
@@ -332,7 +356,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
             val hidValue = ((65534 * normalized).toInt() - 32768).toShort()
 
             // 上报
-            hidGamepad.setSteering(hidValue)
+            hidGamepad?.setSteering(hidValue)
             reportOnce()
         }
         previousSteeringAngle = currentSteeringAngle
@@ -358,7 +382,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
 //            hidGamepad.setAccelerator((65535 - (hidValue.toInt() + 32768) - 32768).toShort())
 
 //            Log.i("App", "Report Acc: $hidValue")
-            hidGamepad.setAccelerator(hidValue)
+            hidGamepad?.setAccelerator(hidValue)
             reportOnce()
 
             acceleratorBarProgress = normalized
@@ -461,18 +485,18 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         {
             KeyEvent.KEYCODE_VOLUME_UP -> {
                 if (press)
-                    hidGamepad.press(HIDGamepad.BUTTON_127)
+                    hidGamepad?.press(HIDGamepad.BUTTON_127)
                 else
-                    hidGamepad.release(HIDGamepad.BUTTON_127)
-                hidGamepad.sendReport()
+                    hidGamepad?.release(HIDGamepad.BUTTON_127)
+                hidGamepad?.sendReport()
             }
 
             KeyEvent.KEYCODE_VOLUME_DOWN -> {
                 if (press)
-                    hidGamepad.press(HIDGamepad.BUTTON_128)
+                    hidGamepad?.press(HIDGamepad.BUTTON_128)
                 else
-                    hidGamepad.release(HIDGamepad.BUTTON_128)
-                hidGamepad.sendReport()
+                    hidGamepad?.release(HIDGamepad.BUTTON_128)
+                hidGamepad?.sendReport()
             }
 
             KeyEvent.KEYCODE_MENU -> {

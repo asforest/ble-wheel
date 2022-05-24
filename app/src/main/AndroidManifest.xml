@@ -26,6 +26,8 @@
 
         <activity android:name=".activity.DrivingActivity"
             android:screenOrientation="landscape" />
+
+        <service android:name=".service.BLEGattServerService" />
     </application>
 
 </manifest>

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Blew</string>
+    <string name="notification_channel_name">notify_channel_default</string>
 </resources>

@@ -1,10 +1,11 @@
 package com.github.asforest.blew.ble.impl
 
 import android.bluetooth.BluetoothGattCharacteristic
-import android.content.Context
+import android.bluetooth.BluetoothGattServer
 import android.util.Log
 import com.github.asforest.blew.ble.BLE
 import com.github.asforest.blew.ble.HIDPeripheral
+import com.github.asforest.blew.service.BLEGattServerService
 import com.github.asforest.blew.util.BinaryUtils.high8
 import com.github.asforest.blew.util.BinaryUtils.low8
 import com.github.asforest.blew.util.BinaryUtils.reversedHighLowByte
@@ -12,8 +13,11 @@ import kotlin.experimental.and
 import kotlin.experimental.or
 
 
-class HIDGamepad(context: Context, var config: GamepadConfiguration) : HIDPeripheral(context)
-{
+class HIDGamepad(
+    val config: GamepadConfiguration,
+    val gattServer: BluetoothGattServer,
+    val bleGattServerService: BLEGattServerService
+) : HIDPeripheral(gattServer, bleGattServerService) {
     var _buttons = ByteArray(16) // 8 bits x 16 --> 128 bits // uint8_t
     var _specialButtons: Byte = 0 // uint8_t
     var _x: Short = 0 // int16_t
@@ -562,7 +566,7 @@ class HIDGamepad(context: Context, var config: GamepadConfiguration) : HIDPeriph
 
     fun sendReport()
     {
-        if (currentDevice == null)
+        if (bleGattServerService.currentDevice == null)
             return
 
         var currentReportIndex = 0
@@ -655,9 +659,8 @@ class HIDGamepad(context: Context, var config: GamepadConfiguration) : HIDPeriph
         }
 
         inputGamepad.value = m
-        gattServer.notifyCharacteristicChanged(currentDevice, inputGamepad, false)
+        gattServer.notifyCharacteristicChanged(bleGattServerService.currentDevice, inputGamepad, false)
     }
-
 
     fun press(button: UByte)
     {
