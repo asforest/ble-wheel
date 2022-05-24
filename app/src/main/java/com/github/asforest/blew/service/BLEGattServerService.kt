@@ -32,6 +32,7 @@ import com.github.asforest.blew.activity.DrivingActivity
 import com.github.asforest.blew.ble.BLE
 import com.github.asforest.blew.ble.impl.HIDGamepad
 import com.github.asforest.blew.event.Event
+import com.github.asforest.blew.util.AndroidUtils.toast
 import kotlin.random.Random
 
 class BLEGattServerService : Service()
@@ -115,6 +116,8 @@ class BLEGattServerService : Service()
         unregisterReceiver(ntfActionReceiver)
         stopAdvertising()
         close()
+
+        toast("BLE GATT Server 已经退出")
     }
 
     fun setupHIDGamepad(): HIDGamepad
