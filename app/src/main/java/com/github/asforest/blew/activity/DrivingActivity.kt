@@ -93,7 +93,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
     var acceleratorHalfConstraint: Int = 45
     var reportPeriodMs: Int = 50
 
-    var reportingEnabled = true // 为false时禁用所有旋转，也不向BLE报告陀螺仪数据
+    var reportingEnabled = false // 为false时禁用所有旋转，也不向BLE报告陀螺仪数据
     var currentRotation: Matrix4f? = null
     var referenceRotation: Matrix4f? = null
 
