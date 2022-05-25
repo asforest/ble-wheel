@@ -31,6 +31,7 @@ import androidx.core.app.NotificationCompat
 import com.github.asforest.blew.BuildConfig
 import com.github.asforest.blew.R
 import com.github.asforest.blew.activity.DrivingActivity
+import com.github.asforest.blew.activity.MainActivity
 import com.github.asforest.blew.ble.BLE
 import com.github.asforest.blew.ble.impl.HIDGamepad
 import com.github.asforest.blew.event.Event
@@ -73,45 +74,45 @@ class BLEGattServerService : Service()
         startForeground(NOTIFICATION_ID, buildNotification())
 
         try {
+            if (!adapter.isEnabled)
+                throw UnsupportedOperationException("Bluetooth is disabled")
 
+            // 注册通知相关
+            registerReceiver(ntfActionReceiver, IntentFilter(ntfActionReceiver.ACTION))
+
+            // 设置游戏控制器
+            hidGamepad.setAccelerator(0)
+            hidGamepad.setBrake(0)
+            hidGamepad.setSteering(0)
+
+            // 监听事件
+            onCharacteristicReadEvent.always {
+                if (it.characteristic.uuid == BLE.CHARACTERISTIC_HID_REPORT_MAP_0x2A4B)
+                    startActivity(Intent(this, DrivingActivity::class.java))
+            }
+
+            onBleAdvertiseStart.once {
+                if (it != null)
+                {
+                    onError("BLE广播启动失败", "error code: $it")
+                } else {
+                    state = ServiceState.Started
+                    showOrUpdateMainNotification()
+                }
+            }
+
+            onDeviceConnectionStateChangeEvent.always {
+                showOrUpdateMainNotification()
+            }
+
+            // 启动广播
+            startAdvertising()
         } catch (e: Exception) {
             Log.e("App", e.stackTraceToString())
             onError("发生错误", e.stackTraceToString())
+
+            stopSelf()
         }
-
-        if (!adapter.isEnabled)
-            throw UnsupportedOperationException("Bluetooth is disabled.")
-
-        // 注册通知相关
-        registerReceiver(ntfActionReceiver, IntentFilter(ntfActionReceiver.ACTION))
-
-        // 设置游戏控制器
-        hidGamepad.setAccelerator(0)
-        hidGamepad.setBrake(0)
-        hidGamepad.setSteering(0)
-
-        // 监听事件
-        onCharacteristicReadEvent.always {
-            if (it.characteristic.uuid == BLE.CHARACTERISTIC_HID_REPORT_MAP_0x2A4B)
-                startActivity(Intent(this, DrivingActivity::class.java))
-        }
-
-        onBleAdvertiseStart.once {
-            if (it != null)
-            {
-                onError("BLE广播启动失败", "error code: $it")
-            } else {
-                state = ServiceState.Started
-                showOrUpdateMainNotification()
-            }
-        }
-
-        onDeviceConnectionStateChangeEvent.always {
-            showOrUpdateMainNotification()
-        }
-
-        // 启动广播
-        startAdvertising()
     }
 
     override fun onDestroy()
@@ -147,7 +148,7 @@ class BLEGattServerService : Service()
     fun buildNotification(): Notification
     {
         val stopButton = NotificationCompat.Action(
-            R.mipmap.ic_launcher, "退出运行",
+            R.mipmap.ic_launcher, "退出BLE广播",
             PendingIntent.getBroadcast(
                 this, 2,
                 Intent(ntfActionReceiver.ACTION)
@@ -156,12 +157,16 @@ class BLEGattServerService : Service()
         )
 
         val drivingButton = NotificationCompat.Action(
-            R.mipmap.ic_launcher, "打开界面",
+            R.mipmap.ic_launcher, "打开驾驶界面",
             PendingIntent.getBroadcast(
                 this, 3,
                 Intent(ntfActionReceiver.ACTION)
                     .putExtra("button_index", ntfActionReceiver.BUTTON_DRIVING), 0
             )
+        )
+
+        val openMainActivity = PendingIntent.getActivity(
+            this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val contentText = when (state) {
@@ -183,7 +188,7 @@ class BLEGattServerService : Service()
             .setContentText(contentText)
             .setOngoing(true)
             .setAutoCancel(false)
-            .setContentIntent(drivingButton.actionIntent)
+            .setContentIntent(openMainActivity)
             .addAction(stopButton)
             .addAction(drivingButton)
             .build()
@@ -196,6 +201,8 @@ class BLEGattServerService : Service()
 
     fun onError(title: String, message: String)
     {
+        toast(message)
+
         val ntf = NotificationCompat.Builder(this, getString(R.string.notification_channel_name))
             .setSmallIcon(R.mipmap.steering_wheel)
             .setContentTitle(title)

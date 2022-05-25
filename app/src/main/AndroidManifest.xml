@@ -17,19 +17,22 @@
         android:theme="@style/Theme.AppCompat.NoActionBar">
 
         <activity
-            android:name="com.github.asforest.blew.activity.MainActivity"
+            android:name=".activity.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".activity.DrivingActivity"
+        <activity
+            android:name=".activity.DrivingActivity"
             android:screenOrientation="landscape" />
 
-        <service android:name=".service.BLEGattServerService"
-            android:foregroundServiceType="connectedDevice"/>
+        <service
+            android:name=".service.BLEGattServerService"
+            android:foregroundServiceType="connectedDevice" />
     </application>
 
 </manifest>

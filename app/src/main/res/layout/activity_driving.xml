@@ -117,7 +117,7 @@
             android:layout_width="120dp"
             android:layout_height="90dp"
             android:padding="8dp"
-            android:text="点击启停数据上报\n按住重置基准方向"
+            android:text="点击启停数据上报\n和重置基准方向"
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

@@ -12,6 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import com.github.asforest.blew.R
+import com.github.asforest.blew.util.AndroidUtils.requestPermission
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -24,7 +25,17 @@ object AndroidUtils
     }
 
     /**
-     * 申请权限
+     * 检查是否有权限
+     * @param permissions 要申请的权限
+     * @return 没有的权限们。如果全部申请成功，返回一个空列表
+     */
+    fun FragmentActivity.hasPermissions(permissions: List<String>): List<String>
+    {
+        return permissions.filter { ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED }
+    }
+
+    /**
+     * 申请权限（此方法仅运行在OnCreate上下文中调用，如果使用协程不要有任何挂起行为，否则失败）
      * @param permissions 要申请的权限
      * @return 未能申请到的权限们。如果全部申请成功，返回一个空列表
      */
@@ -46,12 +57,32 @@ object AndroidUtils
             continuation!!.resume(isGranted.filter { !it.value }.map { it.key })
         }.launch(permissions.toTypedArray())
 
-        return suspendCoroutine {
-            val isReIn = continuation != null
-            continuation = it
-            if (isReIn)
-                return@suspendCoroutine
+        return suspendCoroutine { continuation = it }
+    }
+
+    suspend fun Context.popupDialogSuspend(title: String, message: String)
+    {
+        var continuation: Continuation<Unit>? = null
+        var resumed = false
+
+        fun resume()
+        {
+            if (resumed)
+                return
+
+            continuation?.resume(Unit)
+            continuation == null
+            resumed = true
         }
+
+        AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(message)
+            .setNegativeButton("好耶") { _, _ -> resume() }
+            .setOnDismissListener { resume() }
+            .show()
+
+        return suspendCoroutine { continuation = it }
     }
 
     fun Context.popupDialog(title: String, message: String, onClick: (() -> Unit)? = null)

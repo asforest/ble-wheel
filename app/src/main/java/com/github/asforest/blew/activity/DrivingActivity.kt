@@ -128,26 +128,24 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         sensorManager.registerListener(this, rotationSensor, SensorManager.SENSOR_DELAY_GAME)
 
         // 监听按钮点击
-
-        // 重新记录下参考值
-        primaryButton.setOnLongClickListener {
-            if (referenceRotation == null)
-                referenceRotation = Matrix4f()
-            referenceRotation!!.set(currentRotation)
-            referenceRotationText.text = referenceRotation!!.stringify()
-
-            // 复位数据
-            accumulatedSteeringAngle = 0f
-            accumulatedAcceleratorAngle = 0f
-            previousSteeringAngle = null
-            previousAcceleratorAngleX = null
-            true
-        }
-
-        // 启用/禁用数据报告
+        // 启用/禁用数据报告并重新记录下参考值
         primaryButton.setOnClickListener {
             reportingEnabled = !reportingEnabled
             primaryButton.alpha = if (reportingEnabled) 1f else 0.4f
+
+            if (reportingEnabled)
+            {
+                if (referenceRotation == null)
+                    referenceRotation = Matrix4f()
+                referenceRotation!!.set(currentRotation)
+                referenceRotationText.text = referenceRotation!!.stringify()
+
+                // 复位数据
+                accumulatedSteeringAngle = 0f
+                accumulatedAcceleratorAngle = 0f
+                previousSteeringAngle = null
+                previousAcceleratorAngleX = null
+            }
         }
 
         for ((index, button) in functionalButtons.withIndex())
