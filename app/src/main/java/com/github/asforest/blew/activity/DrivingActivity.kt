@@ -89,8 +89,8 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
     ) }
 
     var editingMode = false
-    var steeringHalfConstraint: Int = 270
-    var acceleratorHalfConstraint: Int = 45
+    var steeringConstraint: Int = 900
+    var acceleratorConstraint: Int = 90
     var reportPeriodMs: Int = 50
 
     var reportingEnabled = false // 为false时禁用所有旋转，也不向BLE报告陀螺仪数据
@@ -186,18 +186,17 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
                     if (event.action == MotionEvent.ACTION_DOWN)
                     {
                        viewModel.viewModelScope.launch {
-                           val newPragma = popupAdvPragmaDialog(steeringHalfConstraint, acceleratorHalfConstraint, reportPeriodMs)
-                           val steeringConstraint = Math.clamp(15, 1000, newPragma[0] ?: steeringHalfConstraint)
-                           val acceleratorConstraint = Math.clamp(5, 180, newPragma[1] ?: acceleratorHalfConstraint)
-                           val reportPeriod = Math.clamp(30, 5000, newPragma[2] ?: reportPeriodMs)
+                           val newPragma = popupAdvPragmaDialog(steeringConstraint, acceleratorConstraint, reportPeriodMs)
+                           val steeringConstraint = Math.clamp(5, 2000, newPragma[0] ?: steeringConstraint)
+                           val acceleratorConstraint = Math.clamp(5, 360, newPragma[1] ?: acceleratorConstraint)
+                           val reportPeriod = Math.clamp(10, 5000, newPragma[2] ?: reportPeriodMs)
 
-                           steeringHalfConstraint = steeringConstraint
-                           acceleratorHalfConstraint = acceleratorConstraint
+                           this@DrivingActivity.steeringConstraint = steeringConstraint
+                           this@DrivingActivity.acceleratorConstraint = acceleratorConstraint
                            reportPeriodMs = reportPeriod
 
                            saveConfig()
-
-                           popupDialog("高级参数已更新", "已即时生效")
+                           toast("高级参数已更新，会实时生效")
                        }
                     }
                 }
@@ -362,7 +361,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
             accumulatedSteeringAngle += angleDelta(currentSteeringAngle, previousSteeringAngle!!)
 
             // 方向盘的最大旋转角度（一半）
-            val halfConstraint = steeringHalfConstraint.toFloat()
+            val halfConstraint = steeringConstraint.toFloat() / 2
 
             // 归一化（默认位置是在0.5）
             val normalized = (Math.clamp(-halfConstraint, halfConstraint, accumulatedSteeringAngle) + halfConstraint) / (halfConstraint * 2)
@@ -384,7 +383,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
             accumulatedAcceleratorAngle += angleDelta(currentAcceleratorAngle, previousAcceleratorAngleX!!)
 
             // 最大旋转角度（一半）
-            val halfConstraint = acceleratorHalfConstraint.toFloat()
+            val halfConstraint = acceleratorConstraint.toFloat() / 2
 
             // 归一化（默认位置是在0.5）
             val normalized = (Math.clamp(-halfConstraint, halfConstraint, accumulatedAcceleratorAngle) + halfConstraint) / (halfConstraint * 2)
@@ -436,8 +435,8 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         for ((index, button) in functionalButtons.withIndex())
             functionalButtons[index].text = root.optString("b${index + 1}", "b${index + 1}")
 
-        steeringHalfConstraint = root.optInt("steering_half_constraint", 270)
-        acceleratorHalfConstraint = root.optInt("accelerator_half_constraint", 45)
+        steeringConstraint = root.optInt("steering_half_constraint", 270)
+        acceleratorConstraint = root.optInt("accelerator_half_constraint", 45)
         reportPeriodMs = root.optInt("report_period", 50)
     }
 
@@ -446,8 +445,8 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         val configFile = FileObj("/sdcard/blew.json")
 
         val root = JSONObject()
-        root.put("steering_half_constraint", steeringHalfConstraint)
-        root.put("accelerator_half_constraint", acceleratorHalfConstraint)
+        root.put("steering_half_constraint", steeringConstraint)
+        root.put("accelerator_half_constraint", acceleratorConstraint)
         root.put("report_period", reportPeriodMs)
 
         for ((index, button) in functionalButtons.withIndex())
@@ -485,11 +484,13 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
     fun switchEditingMode()
     {
         editingMode = !editingMode
+
         if (editingMode)
             exitFullscreen()
         else
             enterFullscreen()
-        popupDialog("模式已切换", "已经切换到" + if (editingMode) "编辑模式" else "正常模式")
+
+        toast(if (editingMode) "已切换到编辑模式，点击按钮更改文字" else "已切换回正常模式")
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean = onKeyEvent(keyCode, true)
