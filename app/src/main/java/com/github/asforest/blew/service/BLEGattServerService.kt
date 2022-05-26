@@ -22,13 +22,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.IBinder
 import android.os.ParcelUuid
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.github.asforest.blew.BuildConfig
 import com.github.asforest.blew.R
 import com.github.asforest.blew.activity.DrivingActivity
 import com.github.asforest.blew.activity.MainActivity
@@ -86,11 +84,6 @@ class BLEGattServerService : Service()
             hidGamepad.setSteering(0)
 
             // 监听事件
-            onCharacteristicReadEvent.always {
-                if (it.characteristic.uuid == BLE.CHARACTERISTIC_HID_REPORT_MAP_0x2A4B)
-                    startActivity(Intent(this, DrivingActivity::class.java))
-            }
-
             onBleAdvertiseStart.once {
                 if (it != null)
                 {
