@@ -1,8 +1,10 @@
 package com.github.asforest.blew.activity
 
 import android.Manifest
+import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.ComponentName
 import android.content.Context
@@ -15,7 +17,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -68,6 +72,14 @@ class MainActivity : AppCompatActivity()
                     popupDialogSuspend("没有权限", "请授权外部存储设备的读写权限以保存配置文件(/sdcard/blew.json)！请在设置中手动勾选\"存储\"权限")
                     finish()
                 }
+            }
+            
+            if (!bluetoothManager.adapter.isEnabled)
+            {
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                    if (it.resultCode == Activity.RESULT_CANCELED)
+                        toast("需要开启蓝牙")
+                }.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
             }
 
             init()

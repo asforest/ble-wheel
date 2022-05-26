@@ -26,6 +26,7 @@ import android.os.Binder
 import android.os.IBinder
 import android.os.ParcelUuid
 import android.util.Log
+import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.app.NotificationCompat
 import com.github.asforest.blew.R
 import com.github.asforest.blew.activity.DrivingActivity
@@ -72,9 +73,6 @@ class BLEGattServerService : Service()
         startForeground(NOTIFICATION_ID, buildNotification())
 
         try {
-            if (!adapter.isEnabled)
-                throw UnsupportedOperationException("Bluetooth is disabled")
-
             // 注册通知相关
             registerReceiver(ntfActionReceiver, IntentFilter(ntfActionReceiver.ACTION))
 
