@@ -16,7 +16,7 @@
         <TextView
             android:id="@+id/reference_rotation"
             android:layout_width="160dp"
-            android:layout_height="60dp"
+            android:layout_height="65dp"
             android:text="reference_rotation"
             android:textAlignment="center"
             android:textSize="14sp"
@@ -26,7 +26,7 @@
         <TextView
             android:id="@+id/current_rotation"
             android:layout_width="160dp"
-            android:layout_height="60dp"
+            android:layout_height="65dp"
             android:text="current_rotation"
             android:textAlignment="center"
             android:textSize="14sp"
@@ -74,7 +74,7 @@
             <Button
                 android:id="@+id/gamepad_button_25"
                 android:layout_width="150dp"
-                android:layout_height="60dp"
+                android:layout_height="65dp"
                 android:text="Button25"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -82,7 +82,7 @@
             <Button
                 android:id="@+id/gamepad_button_26"
                 android:layout_width="0dp"
-                android:layout_height="60dp"
+                android:layout_height="65dp"
                 android:text="Button26"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/gamepad_button_27"
@@ -91,7 +91,7 @@
             <Button
                 android:id="@+id/gamepad_button_27"
                 android:layout_width="150dp"
-                android:layout_height="60dp"
+                android:layout_height="65dp"
                 android:text="Button27"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
@@ -115,7 +115,7 @@
         <Button
             android:id="@+id/button_center"
             android:layout_width="120dp"
-            android:layout_height="90dp"
+            android:layout_height="70dp"
             android:padding="8dp"
             android:text="点击启停数据上报\n和重置基准方向"
             android:textSize="12sp"

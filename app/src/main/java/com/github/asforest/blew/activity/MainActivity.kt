@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity()
                     finish()
                 }
             }
-            
+
             if (!bluetoothManager.adapter.isEnabled)
             {
                 registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
