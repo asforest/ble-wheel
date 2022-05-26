@@ -130,22 +130,7 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         // 监听按钮点击
         // 启用/禁用数据报告并重新记录下参考值
         primaryButton.setOnClickListener {
-            reportingEnabled = !reportingEnabled
-            primaryButton.alpha = if (reportingEnabled) 1f else 0.4f
-
-            if (reportingEnabled)
-            {
-                if (referenceRotation == null)
-                    referenceRotation = Matrix4f()
-                referenceRotation!!.set(currentRotation)
-                referenceRotationText.text = referenceRotation!!.stringify()
-
-                // 复位数据
-                accumulatedSteeringAngle = 0f
-                accumulatedAcceleratorAngle = 0f
-                previousSteeringAngle = null
-                previousAcceleratorAngleX = null
-            }
+            switchDataReporting()
         }
 
         for ((index, button) in functionalButtons.withIndex())
@@ -242,10 +227,19 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
         toast("同时按音量键+-切换编辑模式\n也可以按菜单键切换")
     }
 
-//    override fun onMenuOpened(featureId: Int, menu: Menu): Boolean
-//    {
-//
-//    }
+    override fun onDestroy()
+    {
+        super.onDestroy()
+        sensorManager.unregisterListener(this)
+        unregisterReceiver(batteryLevelChangeReceiver)
+    }
+
+    override fun onPause()
+    {
+        super.onPause()
+
+        switchDataReporting(false)
+    }
 
     override fun onWindowFocusChanged(hasFocus: Boolean)
     {
@@ -255,11 +249,28 @@ class DrivingActivity : AppCompatActivity(), SensorEventListener
             enterFullscreen()
     }
 
-    override fun onDestroy()
+    /**
+     * 开启或者关闭蓝牙数据上报开关
+     * @param enabled 开始还是关闭，如果为null则反转开关状态
+     */
+    fun switchDataReporting(enabled: Boolean? = null)
     {
-        super.onDestroy()
-        sensorManager.unregisterListener(this)
-        unregisterReceiver(batteryLevelChangeReceiver)
+        reportingEnabled = enabled ?: !reportingEnabled
+        primaryButton.alpha = if (reportingEnabled) 1f else 0.4f
+
+        if (reportingEnabled)
+        {
+            if (referenceRotation == null)
+                referenceRotation = Matrix4f()
+            referenceRotation!!.set(currentRotation)
+            referenceRotationText.text = referenceRotation!!.stringify()
+
+            // 复位数据
+            accumulatedSteeringAngle = 0f
+            accumulatedAcceleratorAngle = 0f
+            previousSteeringAngle = null
+            previousAcceleratorAngleX = null
+        }
     }
 
     fun enterFullscreen()
