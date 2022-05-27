@@ -1,6 +1,5 @@
 package com.github.asforest.blew.util
 
-import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -12,7 +11,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import com.github.asforest.blew.R
-import com.github.asforest.blew.util.AndroidUtils.requestPermission
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -121,20 +119,20 @@ object AndroidUtils
         var continuation: Continuation<List<Int?>>? = null
 
         val view = this.layoutInflater.inflate(R.layout.dialog_adv_params, null)
-        val _steeringHalfConstraint = view.findViewById<EditText>(R.id.steering_half_constraint)
-        val _acceleratorHalfConstraint = view.findViewById<EditText>(R.id.accelerator_half_constraint)
+        val _steeringConstraint = view.findViewById<EditText>(R.id.steering_half_constraint)
+        val _acceleratorConstraint = view.findViewById<EditText>(R.id.accelerator_half_constraint)
         val _reportPeriodMs = view.findViewById<EditText>(R.id.report_period_ms)
 
-        _steeringHalfConstraint.setText(steeringHalfConstraint.toString())
-        _acceleratorHalfConstraint.setText(acceleratorHalfConstraint.toString())
+        _steeringConstraint.setText(steeringHalfConstraint.toString())
+        _acceleratorConstraint.setText(acceleratorHalfConstraint.toString())
         _reportPeriodMs.setText(reportPeriodMs.toString())
 
         AlertDialog.Builder(this)
             .setView(view)
             .setPositiveButton("好耶") { dialog, which ->
                 continuation?.resume(listOf(
-                    _steeringHalfConstraint.text.toString().toIntOrNull(),
-                    _acceleratorHalfConstraint.text.toString().toIntOrNull(),
+                    _steeringConstraint.text.toString().toIntOrNull(),
+                    _acceleratorConstraint.text.toString().toIntOrNull(),
                     _reportPeriodMs.text.toString().toIntOrNull(),
                 ))
             }.show()
